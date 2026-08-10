@@ -1,0 +1,15 @@
+[2026-07-15 16:46:46 #31585.8]	INFO	Server is shutdown now
+[2026-07-27 16:40:09 #85900.8]	INFO	Server is shutdown now
+[2026-07-27 16:50:56 *86700.6]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-07-27 16:51:02 #86675.8]	INFO	Server is shutdown now
+[2026-07-27 16:56:16 #88020.8]	INFO	Server is shutdown now
+[2026-07-27 17:02:07 #88957.8]	INFO	Server is shutdown now
+[2026-07-27 17:09:48 #90211.8]	INFO	Server is shutdown now
+[2026-07-27 17:28:35 #96038.8]	INFO	Server is shutdown now
+[2026-07-27 17:41:37 #97310.8]	INFO	Server is shutdown now
+[2026-07-27 17:43:34 #527.8]	INFO	Server is shutdown now
+[2026-07-27 17:45:37 #3788.8]	INFO	Server is shutdown now
+[2026-07-27 17:53:27 #5737.8]	INFO	Server is shutdown now
+[2026-07-27 17:54:47 #8294.8]	INFO	Server is shutdown now
+[2026-07-27 17:57:13 #12778.8]	INFO	Server is shutdown now
+[2026-07-27 18:02:21 #14177.8]	INFO	Server is shutdown now

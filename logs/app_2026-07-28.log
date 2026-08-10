@@ -1,0 +1,88 @@
+[2026-07-28 03:12:31] [21405] [info] Starting Sikelan framework in http mode
+[2026-07-28 03:12:31] [21405] [info] Server starting... {"host":"0.0.0.0","port":9502}
+[2026-07-28 03:12:31] [21409] [info] Worker 20 started
+[2026-07-28 03:12:31] [21410] [info] Worker 21 started
+[2026-07-28 03:12:31] [21411] [info] Worker 22 started
+[2026-07-28 03:12:31] [21412] [info] Worker 23 started
+[2026-07-28 03:12:31] [21413] [info] Worker 24 started
+[2026-07-28 03:12:31] [21414] [info] Worker 25 started
+[2026-07-28 03:12:31] [21415] [info] Worker 26 started
+[2026-07-28 03:12:31] [21416] [info] Worker 27 started
+[2026-07-28 03:12:31] [21417] [info] Worker 28 started
+[2026-07-28 03:12:31] [21418] [info] Worker 29 started
+[2026-07-28 03:12:31] [21419] [info] Worker 0 started
+[2026-07-28 03:12:31] [21419] [info] Crontab service started
+[2026-07-28 03:12:31] [21420] [info] Worker 1 started
+[2026-07-28 03:12:31] [21421] [info] Worker 2 started
+[2026-07-28 03:12:31] [21422] [info] Worker 3 started
+[2026-07-28 03:12:31] [21423] [info] Worker 4 started
+[2026-07-28 03:12:31] [21424] [info] Worker 5 started
+[2026-07-28 03:12:31] [21425] [info] Worker 6 started
+[2026-07-28 03:12:31] [21426] [info] Worker 7 started
+[2026-07-28 03:12:31] [21428] [info] Worker 9 started
+[2026-07-28 03:12:31] [21427] [info] Worker 8 started
+[2026-07-28 03:12:31] [21429] [info] Worker 10 started
+[2026-07-28 03:12:31] [21430] [info] Worker 11 started
+[2026-07-28 03:12:31] [21431] [info] Worker 12 started
+[2026-07-28 03:12:31] [21432] [info] Worker 13 started
+[2026-07-28 03:12:31] [21434] [info] Worker 15 started
+[2026-07-28 03:12:31] [21433] [info] Worker 14 started
+[2026-07-28 03:12:31] [21435] [info] Worker 16 started
+[2026-07-28 03:12:31] [21436] [info] Worker 17 started
+[2026-07-28 03:12:31] [21437] [info] Worker 18 started
+[2026-07-28 03:12:31] [21438] [info] Worker 19 started
+[2026-07-28 07:29:56] [32398] [info] Starting Sikelan framework in http mode
+[2026-07-28 07:29:56] [32398] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-28 07:29:56] [32402] [info] Worker 2 started
+[2026-07-28 07:29:56] [32403] [info] Worker 0 started
+[2026-07-28 07:29:56] [32404] [info] Worker 1 started
+[2026-07-28 07:29:56] [32403] [info] Crontab service started
+[2026-07-28 07:56:44] [37347] [info] Starting Sikelan framework in http mode
+[2026-07-28 07:56:44] [37347] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-28 07:56:44] [37349] [info] Worker 2 started
+[2026-07-28 07:56:44] [37350] [info] Worker 0 started
+[2026-07-28 07:56:44] [37351] [info] Worker 1 started
+[2026-07-28 07:56:44] [37350] [info] Crontab service started
+[2026-07-28 07:57:21] [37351] [debug] Request completed in 0.45490264892578ms {"method":"GET","uri":"\/"}
+[2026-07-28 07:57:33] [37351] [debug] Request completed in 0.10800361633301ms {"method":"GET","uri":"\/api\/health"}
+[2026-07-28 07:57:43] [37351] [debug] Request completed in 2.0871162414551ms {"method":"GET","uri":"\/api\/status"}
+[2026-07-28 08:03:02] [38215] [info] Starting Sikelan framework in http mode
+[2026-07-28 08:03:02] [38215] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-28 08:03:02] [38217] [info] Worker 2 started
+[2026-07-28 08:03:02] [38218] [info] Worker 0 started
+[2026-07-28 08:03:02] [38218] [info] Crontab service started
+[2026-07-28 08:03:02] [38219] [info] Worker 1 started
+[2026-07-28 09:12:20] [39656] [info] Starting Sikelan framework in http mode
+[2026-07-28 09:12:20] [39656] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-28 09:12:20] [39658] [info] Worker 2 started
+[2026-07-28 09:12:20] [39659] [info] Worker 0 started
+[2026-07-28 09:12:20] [39659] [info] Crontab service started
+[2026-07-28 09:12:20] [39660] [info] Worker 1 started
+[2026-07-28 09:17:48] [39660] [debug] Request completed in 7.0369243621826ms {"method":"GET","uri":"\/"}
+[2026-07-28 09:17:49] [39660] [debug] Request completed in 0.53882598876953ms {"method":"GET","uri":"\/api\/task\/async"}
+[2026-07-28 09:17:49] [39658] [info] ExceptionDemoTask started {"should_throw":true,"message":"Async exception demo"}
+[2026-07-28 09:17:49] [39658] [warning] ExceptionDemoTask will throw an exception {"message":"Async exception demo"}
+[2026-07-28 09:17:49] [39658] [error] Task execution error: Intentional exception: Async exception demo {"task":"{\"class\":\"App\\\\Tasks\\\\ExceptionDemoTask\",\"args\":{\"should_throw\":true,\"message\":\"Async exception demo\"}}","trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Task\/TaskManager.php(93): App\\Tasks\\ExceptionDemoTask->handle(Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Framework.php(193): Sikelan\\Task\\TaskManager->handleTask('{\"class\":\"App\\\\\\\\...')\n#2 [internal function]: Sikelan\\Framework->onTask(Object(Swoole\\Http\\Server), 0, 1, '{\"class\":\"App\\\\\\\\...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(73): call_user_func(Array, Object(Swoole\\Http\\Server), 0, 1, '{\"class\":\"App\\\\\\\\...')\n#4 [internal function]: Sikelan\\Server\\Server->Sikelan\\Server\\{closure}(Object(Swoole\\Http\\Server), 0, 1, '{\"class\":\"App\\\\\\\\...')\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(99): Swoole\\Server->start()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Framework.php(113): Sikelan\\Server\\Server->start()\n#7 \/Users\/wmc\/data\/trae\/project\/whale\/bin\/start.php(39): Sikelan\\Framework->run('http')\n#8 {main}"}
+[2026-07-28 09:18:39] [39804] [info] Starting Sikelan framework in http mode
+[2026-07-28 09:18:39] [39804] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-28 09:18:40] [39806] [info] Worker 2 started
+[2026-07-28 09:18:40] [39807] [info] Worker 0 started
+[2026-07-28 09:18:40] [39807] [info] Crontab service started
+[2026-07-28 09:18:40] [39808] [info] Worker 1 started
+[2026-07-28 09:18:44] [39808] [debug] Request completed in 4.7171115875244ms {"method":"GET","uri":"\/api\/task\/async"}
+[2026-07-28 09:18:44] [39806] [info] ExceptionDemoTask started {"should_throw":true,"message":"Async exception demo"}
+[2026-07-28 09:18:44] [39806] [warning] ExceptionDemoTask will throw an exception {"message":"Async exception demo"}
+[2026-07-28 09:18:44] [39806] [error] Task execution error: Intentional exception: Async exception demo {"task":"{\"class\":\"App\\\\Tasks\\\\ExceptionDemoTask\",\"args\":{\"should_throw\":true,\"message\":\"Async exception demo\"}}","trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Task\/TaskManager.php(93): App\\Tasks\\ExceptionDemoTask->handle(Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Framework.php(193): Sikelan\\Task\\TaskManager->handleTask('{\"class\":\"App\\\\\\\\...')\n#2 [internal function]: Sikelan\\Framework->onTask(Object(Swoole\\Http\\Server), 0, 1, '{\"class\":\"App\\\\\\\\...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(73): call_user_func(Array, Object(Swoole\\Http\\Server), 0, 1, '{\"class\":\"App\\\\\\\\...')\n#4 [internal function]: Sikelan\\Server\\Server->Sikelan\\Server\\{closure}(Object(Swoole\\Http\\Server), 0, 1, '{\"class\":\"App\\\\\\\\...')\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(99): Swoole\\Server->start()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Framework.php(113): Sikelan\\Server\\Server->start()\n#7 \/Users\/wmc\/data\/trae\/project\/whale\/bin\/start.php(39): Sikelan\\Framework->run('http')\n#8 {main}"}
+[2026-07-28 09:32:51] [40101] [info] Starting Sikelan framework in http mode
+[2026-07-28 09:32:51] [40101] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-28 09:32:51] [40106] [info] Worker 2 started
+[2026-07-28 09:32:51] [40107] [info] Worker 0 started
+[2026-07-28 09:32:51] [40107] [info] Crontab service started
+[2026-07-28 09:32:51] [40108] [info] Worker 1 started
+[2026-07-28 09:33:27] [40107] [debug] Request completed in 32007.138967514ms {"method":"GET","uri":"\/api\/task\/async"}
+[2026-07-28 09:33:27] [40106] [info] ExceptionDemoTask started {"should_throw":true,"message":"Async exception demo"}
+[2026-07-28 09:33:34] [40106] [warning] ExceptionDemoTask will throw an exception {"message":"Async exception demo"}
+[2026-07-28 09:35:34] [40106] [error] Task execution error: Intentional exception: Async exception demo {"task":"{\"class\":\"App\\\\Tasks\\\\ExceptionDemoTask\",\"args\":{\"should_throw\":true,\"message\":\"Async exception demo\"}}","trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Task\/TaskManager.php(93): App\\Tasks\\ExceptionDemoTask->handle(Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Framework.php(193): Sikelan\\Task\\TaskManager->handleTask('{\"class\":\"App\\\\\\\\...')\n#2 [internal function]: Sikelan\\Framework->onTask(Object(Swoole\\Http\\Server), 0, 0, '{\"class\":\"App\\\\\\\\...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(73): call_user_func(Array, Object(Swoole\\Http\\Server), 0, 0, '{\"class\":\"App\\\\\\\\...')\n#4 [internal function]: Sikelan\\Server\\Server->Sikelan\\Server\\{closure}(Object(Swoole\\Http\\Server), 0, 0, '{\"class\":\"App\\\\\\\\...')\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(99): Swoole\\Server->start()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Framework.php(113): Sikelan\\Server\\Server->start()\n#7 \/Users\/wmc\/data\/trae\/project\/whale\/bin\/start.php(39): Sikelan\\Framework->run('http')\n#8 {main}"}
+[2026-07-28 09:35:37] [40107] [debug] Request completed in 0.23198127746582ms {"method":"GET","uri":"\/api\/task\/async"}
+[2026-07-28 09:36:04] [40106] [info] ExceptionDemoTask started {"should_throw":true,"message":"Async exception demo"}
+[2026-07-28 09:36:50] [40158] [info] Worker 2 started

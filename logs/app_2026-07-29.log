@@ -1,0 +1,12 @@
+[2026-07-29 09:06:24] [54546] [info] Starting Sikelan framework in http mode
+[2026-07-29 09:06:24] [54546] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-29 09:06:24] [54550] [info] Worker 2 started
+[2026-07-29 09:06:24] [54551] [info] Worker 0 started
+[2026-07-29 09:06:24] [54551] [info] Crontab service started
+[2026-07-29 09:06:24] [54552] [info] Worker 1 started
+[2026-07-29 09:46:14] [63183] [info] Starting Sikelan framework in http mode
+[2026-07-29 09:46:14] [63183] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-07-29 09:46:14] [63187] [info] Worker 2 started
+[2026-07-29 09:46:14] [63188] [info] Worker 0 started
+[2026-07-29 09:46:14] [63188] [info] Crontab service started
+[2026-07-29 09:46:14] [63189] [info] Worker 1 started

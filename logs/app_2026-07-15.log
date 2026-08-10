@@ -1,0 +1,34 @@
+[2026-07-15 08:41:46] [31585] [info] Starting Sikelan framework in http mode
+[2026-07-15 08:41:46] [31585] [info] Server starting... {"host":"0.0.0.0","port":9502}
+[2026-07-15 08:41:46] [31597] [info] Worker 0 started
+[2026-07-15 08:41:46] [31598] [info] Worker 1 started
+[2026-07-15 08:41:46] [31597] [info] Crontab service started
+[2026-07-15 08:41:46] [31599] [info] Worker 2 started
+[2026-07-15 08:41:46] [31600] [info] Worker 3 started
+[2026-07-15 08:41:46] [31601] [info] Worker 4 started
+[2026-07-15 08:41:46] [31603] [info] Worker 6 started
+[2026-07-15 08:41:46] [31602] [info] Worker 5 started
+[2026-07-15 08:41:46] [31589] [info] Worker 22 started
+[2026-07-15 08:41:46] [31588] [info] Worker 21 started
+[2026-07-15 08:41:46] [31594] [info] Worker 27 started
+[2026-07-15 08:41:46] [31604] [info] Worker 7 started
+[2026-07-15 08:41:46] [31591] [info] Worker 24 started
+[2026-07-15 08:41:46] [31587] [info] Worker 20 started
+[2026-07-15 08:41:46] [31595] [info] Worker 28 started
+[2026-07-15 08:41:46] [31596] [info] Worker 29 started
+[2026-07-15 08:41:46] [31592] [info] Worker 25 started
+[2026-07-15 08:41:46] [31590] [info] Worker 23 started
+[2026-07-15 08:41:46] [31593] [info] Worker 26 started
+[2026-07-15 08:41:46] [31605] [info] Worker 8 started
+[2026-07-15 08:41:46] [31606] [info] Worker 9 started
+[2026-07-15 08:41:46] [31607] [info] Worker 10 started
+[2026-07-15 08:41:46] [31608] [info] Worker 11 started
+[2026-07-15 08:41:46] [31609] [info] Worker 12 started
+[2026-07-15 08:41:46] [31611] [info] Worker 14 started
+[2026-07-15 08:41:46] [31610] [info] Worker 13 started
+[2026-07-15 08:41:46] [31612] [info] Worker 15 started
+[2026-07-15 08:41:46] [31613] [info] Worker 16 started
+[2026-07-15 08:41:46] [31614] [info] Worker 17 started
+[2026-07-15 08:41:46] [31615] [info] Worker 18 started
+[2026-07-15 08:41:46] [31616] [info] Worker 19 started
+[2026-07-15 08:42:37] [31602] [debug] Request completed in 5.2850246429443ms {"method":"GET","uri":"\/"}
