@@ -2,6 +2,7 @@
 
 namespace Sikelan\Hook;
 
+use Sikelan\Process\AbstractProcess;
 use Sikelan\Server\Server;
 
 /**
@@ -48,7 +49,11 @@ interface HookInterface
      * 返回的自定义进程列表会被绑定到 Swoole Server，
      * 由 Swoole Server 统一管理生命周期
      * 
-     * @return array<array{name: string, callback: callable, redirectStdinStdout: bool, pipeType: int}>
+     * 支持两种返回格式：
+     * - AbstractProcess 实例（推荐，支持优雅退出、管道通信、定时器、异常兜底）
+     * - 数组配置 ['name' => string, 'callback' => callable, ...]（兼容旧用法）
+     * 
+     * @return array<AbstractProcess|array{name: string, callback: callable, redirectStdinStdout: bool, pipeType: int}>
      */
     public function registerProcesses(): array;
 }

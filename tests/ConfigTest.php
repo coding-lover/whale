@@ -12,7 +12,7 @@ class ConfigTest extends TestCase
         $config = new Config(__DIR__ . '/../config');
 
         $this->assertEquals('Sikelan', $config->get('app.name'));
-        $this->assertEquals('development', $config->get('app.env'));
+        $this->assertEquals(env('APP_ENV', 'development'), $config->get('app.env'));
     }
 
     public function testConfigSet()

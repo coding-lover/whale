@@ -13,6 +13,7 @@ use Sikelan\Crontab\Crontab;
 use Sikelan\Cache\RedisCache;
 use Sikelan\Database\MysqlPool;
 use Sikelan\Process\ProcessManager;
+use Sikelan\Process\AbstractProcess;
 use Sikelan\Hook\HookInterface;
 
 /**
@@ -250,6 +251,9 @@ class Framework
      * 注册自定义进程
      * 
      * 通过 Hook 注册的自定义进程会绑定到 Swoole Server，由 Swoole Server 管理生命周期
+     * 支持两种返回格式：
+     * - AbstractProcess 实例（推荐，支持优雅退出、管道通信、定时器、异常兜底）
+     * - 数组配置 ['name' => ..., 'callback' => ...]（兼容旧用法）
      */
     protected function registerProcesses(): void
     {
@@ -260,6 +264,14 @@ class Framework
         $processes = $this->hook->registerProcesses();
 
         foreach ($processes as $processConfig) {
+            // 方式一：AbstractProcess 实例（推荐）
+            if ($processConfig instanceof AbstractProcess) {
+                $this->server->addProcess($processConfig);
+                $this->logger->info("Custom process '{$processConfig->getProcessName()}' registered via hook");
+                continue;
+            }
+
+            // 方式二：数组配置（兼容旧用法）
             $name = $processConfig['name'] ?? 'unnamed';
             $callback = $processConfig['callback'];
             $redirectStdinStdout = $processConfig['redirectStdinStdout'] ?? false;

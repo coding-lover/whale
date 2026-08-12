@@ -2,7 +2,10 @@
 
 namespace App\Hooks;
 
+use App\Process\DataSyncProcess;
+use App\Process\HeartbeatProcess;
 use Sikelan\Hook\AbstractHook;
+use Sikelan\Process\AbstractProcess;
 use Sikelan\Server\Server;
 use Swoole\Process;
 
@@ -11,7 +14,7 @@ use Swoole\Process;
  * 
  * 演示如何通过 Hook 机制：
  * 1. 覆盖框架默认的事件回调
- * 2. 注册自定义进程到 Swoole Server
+ * 2. 注册自定义进程到 Swoole Server（使用 AbstractProcess 基类）
  * 
  * 启用方式：在 config/app.php 中配置
  *   'hook' => \App\Hooks\AppHook::class,
@@ -75,40 +78,16 @@ class AppHook extends AbstractHook
     /**
      * 注册自定义进程
      * 
-     * 返回的进程会被绑定到 Swoole Server，由 Swoole Server 管理生命周期
+     * 使用 AbstractProcess 基类，支持优雅退出、管道通信、定时器、异常兜底
      */
     public function registerProcesses(): array
     {
         return [
-            [
-                'name' => 'heartbeat',
-                'callback' => function (Process $worker) {
-                    $this->logger->info('Heartbeat process started');
+            // 心跳进程：每 60 秒输出一次心跳
+            new HeartbeatProcess(),
 
-                    // 每 60 秒输出一次心跳
-                    while (true) {
-                        sleep(60);
-                        $this->logger->info('Heartbeat: ' . date('Y-m-d H:i:s'));
-                    }
-                },
-                'redirectStdinStdout' => false,
-                'pipeType' => 2,
-            ],
-            [
-                'name' => 'data_sync',
-                'callback' => function (Process $worker) {
-                    $this->logger->info('Data sync process started');
-
-                    // 每 300 秒执行一次数据同步
-                    while (true) {
-                        sleep(300);
-                        $this->logger->info('Data sync running...');
-                        // 在这里实现数据同步逻辑
-                    }
-                },
-                'redirectStdinStdout' => false,
-                'pipeType' => 2,
-            ],
+            // 数据同步进程：每 300 秒执行一次同步
+            new DataSyncProcess(),
         ];
     }
 }

@@ -1,2 +1,54 @@
 [2026-08-10 08:19:54] [47544] [info] Starting Sikelan framework in http mode
 [2026-08-10 08:19:54] [47544] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-10 09:49:59] [68530] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:49:59] [68530] [info] Starting Sikelan framework in http mode
+[2026-08-10 09:49:59] [68530] [info] AppHook: onInitialize called
+[2026-08-10 09:49:59] [68530] [info] Event 'request' overridden by hook
+[2026-08-10 09:49:59] [68530] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-10 09:49:59] [68530] [info] Custom process 'heartbeat' registered via hook
+[2026-08-10 09:49:59] [68530] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-10 09:49:59] [68530] [info] Custom process 'data_sync' registered via hook
+[2026-08-10 09:49:59] [68530] [info] AppHook: onServerStart called
+[2026-08-10 09:49:59] [68530] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-10 09:51:38] [70832] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:51:38] [70832] [info] Starting Sikelan framework in http mode
+[2026-08-10 09:51:38] [70832] [info] AppHook: onInitialize called
+[2026-08-10 09:51:38] [70832] [info] Event 'request' overridden by hook
+[2026-08-10 09:51:38] [70832] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-10 09:51:38] [70832] [info] Custom process 'heartbeat' registered via hook
+[2026-08-10 09:51:38] [70832] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-10 09:51:38] [70832] [info] Custom process 'data_sync' registered via hook
+[2026-08-10 09:51:38] [70832] [info] AppHook: onServerStart called
+[2026-08-10 09:51:38] [70832] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-10 09:51:49] [71116] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:51:49] [71116] [info] Starting Sikelan framework in http mode
+[2026-08-10 09:51:49] [71116] [info] AppHook: onInitialize called
+[2026-08-10 09:51:49] [71116] [info] Event 'request' overridden by hook
+[2026-08-10 09:51:49] [71116] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-10 09:51:49] [71116] [info] Custom process 'heartbeat' registered via hook
+[2026-08-10 09:51:49] [71116] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-10 09:51:49] [71116] [info] Custom process 'data_sync' registered via hook
+[2026-08-10 09:51:49] [71116] [info] AppHook: onServerStart called
+[2026-08-10 09:51:49] [71116] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-10 09:55:11] [76323] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:55:11] [76323] [info] Starting Sikelan framework in http mode
+[2026-08-10 09:55:11] [76323] [info] AppHook: onInitialize called
+[2026-08-10 09:55:11] [76323] [info] Event 'request' overridden by hook
+[2026-08-10 09:55:11] [76323] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-10 09:55:11] [76323] [info] Custom process 'heartbeat' registered via hook
+[2026-08-10 09:55:11] [76323] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-10 09:55:11] [76323] [info] Custom process 'data_sync' registered via hook
+[2026-08-10 09:55:11] [76323] [info] AppHook: onServerStart called
+[2026-08-10 09:55:11] [76323] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-10 09:57:25] [79329] [info] Hook loaded: App\Hooks\AppHook

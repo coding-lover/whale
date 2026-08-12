@@ -5,6 +5,7 @@ namespace Sikelan\Server;
 use Sikelan\Core\Container;
 use Sikelan\Core\Logger;
 use Sikelan\Core\Config;
+use Sikelan\Process\AbstractProcess;
 use Swoole\Server as SwooleServer;
 use Swoole\Http\Server as HttpServer;
 use Swoole\WebSocket\Server as WebSocketServer;
@@ -26,6 +27,13 @@ class Server
     protected Config $config;
 
     protected EventRegister $eventRegister;
+
+    /**
+     * 已注册的自定义进程列表
+     * 
+     * 在 start() 前注册，Worker 进程 fork 后继承此数组
+     */
+    protected array $processes = [];
 
     public const TYPE_HTTP = 'http';
     public const TYPE_WEBSOCKET = 'websocket';
@@ -129,17 +137,41 @@ class Server
     /**
      * 添加自定义进程
      * 
-     * 进程会在服务器启动时绑定到 Swoole Server，由 Swoole Server 管理生命周期
+     * 支持两种方式：
+     * 1. 传入 AbstractProcess 实例（推荐，支持优雅退出、管道通信、定时器、异常兜底）
+     * 2. 传入 name + callback 传统方式（兼容旧用法）
      * 
-     * @param string $name 进程名称
-     * @param callable $callback 进程回调函数
+     * @param AbstractProcess|string $process 进程实例或进程名称
+     * @param callable|null $callback 进程回调函数（传统方式时必填）
      * @param bool $redirectStdinStdout 是否重定向标准输入输出
      * @param int $pipeType 管道类型
      * @return self
      */
-    public function addProcess(string $name, callable $callback, bool $redirectStdinStdout = false, int $pipeType = 2): self
-    {
-        $process = new \Swoole\Process(function (\Swoole\Process $worker) use ($name, $callback) {
+    public function addProcess(
+        $process,
+        ?callable $callback = null,
+        bool $redirectStdinStdout = false,
+        int $pipeType = 2
+    ): self {
+        // 方式一：传入 AbstractProcess 实例（推荐）
+        if ($process instanceof AbstractProcess) {
+            $name = $process->getProcessName();
+            $swooleProcess = $process->getSwooleProcess();
+
+            // 保存引用，Worker 进程 fork 后可继承使用
+            $this->processes[$name] = $process;
+
+            if ($this->server) {
+                $this->server->addProcess($swooleProcess);
+                $this->logger->debug("Process '{$name}' attached to Swoole Server");
+            }
+
+            return $this;
+        }
+
+        // 方式二：传统 name + callback 方式（兼容）
+        $name = $process;
+        $swooleProcess = new \Swoole\Process(function (\Swoole\Process $worker) use ($name, $callback) {
             $this->logger->info("Custom process '{$name}' started");
 
             try {
@@ -153,13 +185,47 @@ class Server
             $this->logger->info("Custom process '{$name}' exited");
         }, $redirectStdinStdout, $pipeType);
 
-        // 如果服务器已创建，直接添加到 Swoole Server
         if ($this->server) {
-            $this->server->addProcess($process);
+            $this->server->addProcess($swooleProcess);
             $this->logger->debug("Process '{$name}' attached to Swoole Server");
         }
 
         return $this;
+    }
+
+    /**
+     * 获取已注册的自定义进程
+     * 
+     * Worker 进程可通过此方法获取进程实例，进而调用 sendMessage 或直接操作管道
+     * 
+     * @param string $name 进程名称
+     * @return AbstractProcess|null
+     */
+    public function getProcess(string $name): ?AbstractProcess
+    {
+        return $this->processes[$name] ?? null;
+    }
+
+    /**
+     * 向自定义进程发送消息（通过管道）
+     * 
+     * 在 Worker 进程中调用此方法，数据通过管道发送到目标自定义进程，
+     * 目标进程的 onPipeReadable 回调会被触发
+     * 
+     * @param string $name 进程名称
+     * @param string $data 消息内容
+     * @return int|false 发送的字节数，失败返回 false
+     */
+    public function sendMessage(string $name, string $data)
+    {
+        $process = $this->processes[$name] ?? null;
+
+        if ($process === null) {
+            $this->logger->warning("Process '{$name}' not found, cannot send message");
+            return false;
+        }
+
+        return $process->getSwooleProcess()->write($data);
     }
 
     /**
