@@ -12,3 +12,41 @@
 [2026-07-31 12:42:11 *63189.1]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
 [2026-07-31 12:42:11 $63185.0]	WARNING	swSignal_callback (ERRNO 707): Unable to find callback function for signal Hangup: 1
 [2026-08-05 17:25:31 #63183.2]	INFO	Server is shutdown now
+[2026-08-22 09:35:33 *39041.0]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-08-22 09:35:44 *40449.1]	NOTICE	finish (ERRNO 1005): session#1 does not exists
+[2026-08-22 09:45:33 *44559.0]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-08-22 09:45:33 $44557.0]	WARNING	check_worker_exit_status: worker#0[pid=44559] abnormal exit, status=0, signal=10
+[2026-08-22 09:48:35 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:37 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:37 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:38 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:38 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:55 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:56 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:56 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:56 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:56 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:57 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:57 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:48:57 *56811.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:49:58 *58317.0]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#32 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:50:32 *58317.0]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-08-22 09:50:55 *59615.0]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#32 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:55:50 *59615.0]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-08-22 09:58:46 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:46 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:47 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:48 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:48 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:48 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:48 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:50 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:50 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 09:58:50 *69714.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 10:00:35 *71349.0]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-08-22 10:02:21 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 10:02:24 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 10:02:25 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 10:02:25 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 10:02:25 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-08-22 10:02:25 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain

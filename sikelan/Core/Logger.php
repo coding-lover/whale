@@ -22,15 +22,39 @@ class Logger implements LoggerInterface
         LogLevel::DEBUG => 7,
     ];
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, ?string $channel = null)
     {
         $this->logLevel = $config->get('app.log_level', LogLevel::DEBUG);
         $this->logPath = $config->get('app.log_path', LOG_PATH);
-        $this->channel = $config->get('app.log_channel', 'app');
+        $this->channel = $channel ?? $config->get('app.log_channel', 'app');
 
         if (!is_dir($this->logPath)) {
             mkdir($this->logPath, 0755, true);
         }
+    }
+
+    /**
+     * 创建指定通道的子 Logger
+     *
+     * 共享相同的日志路径和级别，但使用独立的通道名称，
+     * 日志文件将保存为 {channel}_{日期}.log
+     *
+     * @param string $channel 通道名称
+     * @return self
+     */
+    public function withChannel(string $channel): self
+    {
+        $instance = clone $this;
+        $instance->channel = $channel;
+        return $instance;
+    }
+
+    /**
+     * 获取当前通道名称
+     */
+    public function getChannel(): string
+    {
+        return $this->channel;
     }
 
     public function emergency($message, array $context = [])

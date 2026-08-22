@@ -60,7 +60,7 @@ class RequestHandler
 
     /**
      * 执行路由处理器
-     * 
+     *
      * @param array $route 路由信息
      * @param Request $request 请求对象
      * @return mixed
@@ -71,7 +71,7 @@ class RequestHandler
 
         // 闭包回调
         if ($handler instanceof \Closure) {
-            return $handler($request);
+            return $handler($request, $route['params'] ?? []);
         }
 
         // 控制器方法
@@ -81,10 +81,10 @@ class RequestHandler
             // 通过容器获取控制器实例
             $controller = $this->container->get($controllerClass);
 
-            // 获取路由参数
+            // 获取路由参数（以数组形式传递给控制器方法）
             $params = $route['params'] ?? [];
 
-            return $controller->$method($request, ...array_values($params));
+            return $controller->$method($request, $params);
         }
 
         return null;
@@ -92,19 +92,28 @@ class RequestHandler
 
     /**
      * 发送响应
-     * 
-     * @param SwooleResponse $response 响应对象
-     * @param mixed $data 响应数据
+     *
+     * @param SwooleResponse $response Swoole 响应对象
+     * @param mixed $data 响应数据（数组、Response 对象或字符串）
      */
     protected function sendResponse(SwooleResponse $response, $data): void
     {
-        if (is_array($data) || is_object($data)) {
+        // Response 对象：通过 send() 方法写入 Swoole 响应
+        if ($data instanceof Response) {
+            $data->send($response);
+            return;
+        }
+
+        // 数组或普通对象：JSON 编码
+        if (is_array($data)) {
             $response->header('Content-Type', 'application/json');
             $response->end(json_encode($data, JSON_UNESCAPED_UNICODE));
-        } else {
-            $response->header('Content-Type', 'text/html; charset=utf-8');
-            $response->end((string)$data);
+            return;
         }
+
+        // 其他类型：转为字符串
+        $response->header('Content-Type', 'text/html; charset=utf-8');
+        $response->end((string)$data);
     }
 
     /**

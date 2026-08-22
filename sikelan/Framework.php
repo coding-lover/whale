@@ -15,6 +15,7 @@ use Sikelan\Database\MysqlPool;
 use Sikelan\Process\ProcessManager;
 use Sikelan\Process\AbstractProcess;
 use Sikelan\Hook\HookInterface;
+use App\Services\Exchanges\ExchangeManager;
 
 /**
  * 框架总指挥类
@@ -46,6 +47,8 @@ class Framework
     protected ?MysqlPool $db = null;
 
     protected ?ProcessManager $processManager = null;
+
+    protected ?ExchangeManager $exchangeManager = null;
 
     protected ?HookInterface $hook = null;
 
@@ -395,6 +398,30 @@ class Framework
     public function getHook(): ?HookInterface
     {
         return $this->hook;
+    }
+
+    /**
+     * 获取交易所服务管理器
+     *
+     * 作为所有交易所调用的单一出口，支持多交易所
+     *
+     * 用法：
+     * ```php
+     * $exchange = $app->getExchange();
+     *
+     * // 使用默认交易所
+     * $ticker = $exchange->getTicker('BTC/USDT');
+     *
+     * // 指定交易所
+     * $balance = $exchange->exchange('okx')->getBalance();
+     * ```
+     */
+    public function getExchange(): ExchangeManager
+    {
+        if ($this->exchangeManager === null) {
+            $this->exchangeManager = $this->container->get(ExchangeManager::class);
+        }
+        return $this->exchangeManager;
     }
 
     /**

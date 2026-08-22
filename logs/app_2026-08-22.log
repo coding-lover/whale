@@ -1,0 +1,266 @@
+[2026-08-22 00:43:44] [69415] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-22 00:43:44] [69415] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false}
+[2026-08-22 00:43:44] [69415] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-22 00:43:44] [69415] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange
+[2026-08-22 01:00:00] [91325] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:00:00] [91325] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:00:00] [91325] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:00:00] [91325] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange
+[2026-08-22 01:08:29] [3649] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:08:29] [3649] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:08:29] [3649] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:08:29] [3649] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange
+[2026-08-22 01:19:14] [18606] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:19:14] [18606] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:19:14] [18606] [info] AppHook: onInitialize called
+[2026-08-22 01:19:14] [18606] [info] Event 'request' overridden by hook
+[2026-08-22 01:19:14] [18606] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:19:14] [18606] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:19:14] [18606] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:19:14] [18606] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:19:14] [18606] [info] AppHook: onServerStart called
+[2026-08-22 01:19:14] [18606] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:20:10] [18610] [info] Request incoming {"method":"GET","uri":"\/\/api\/exchanges\/binance\/time"}
+[2026-08-22 01:20:10] [18610] [info] Request completed in 0.83ms
+[2026-08-22 01:20:10] [18610] [info] Request incoming {"method":"GET","uri":"\/favicon.ico"}
+[2026-08-22 01:20:10] [18610] [info] Request completed in 0.21ms
+[2026-08-22 01:20:17] [18610] [info] Request incoming {"method":"GET","uri":"\/\/api\/exchanges\/binance\/time"}
+[2026-08-22 01:20:17] [18610] [info] Request completed in 0.31ms
+[2026-08-22 01:20:18] [18610] [info] Request incoming {"method":"GET","uri":"\/favicon.ico"}
+[2026-08-22 01:20:18] [18610] [info] Request completed in 0.16ms
+[2026-08-22 01:21:22] [18610] [info] Request incoming {"method":"GET","uri":"\/"}
+[2026-08-22 01:21:22] [18610] [info] Request completed in 0.6ms
+[2026-08-22 01:21:22] [18610] [info] Request incoming {"method":"GET","uri":"\/favicon.ico"}
+[2026-08-22 01:21:22] [18610] [info] Request completed in 0.19ms
+[2026-08-22 01:24:27] [25043] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:24:27] [25043] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:24:27] [25043] [info] AppHook: onInitialize called
+[2026-08-22 01:24:27] [25043] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:24:27] [25043] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:24:27] [25043] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:24:27] [25043] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:24:27] [25043] [info] AppHook: onServerStart called
+[2026-08-22 01:24:27] [25043] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:24:31] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:24:31] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:24:33] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:24:33] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:24:34] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:24:34] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:24:34] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:24:34] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:25:00] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:25:00] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:25:05] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:25:05] [25047] [error] Request handler error: Cannot register two routes matching "/api/indexes/testSendMsg" for method "GET" {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/DataGenerator\/RegexBasedAbstract.php(30): FastRoute\\DataGenerator\\RegexBasedAbstract->addStaticRoute('GET', Array, 'App\\\\Controllers...')\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/RouteCollector.php(44): FastRoute\\DataGenerator\\RegexBasedAbstract->addRoute('GET', Array, 'App\\\\Controllers...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(96): FastRoute\\RouteCollector->addRoute('GET', '\/api\/indexes\/te...', 'App\\\\Controllers...')\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/vendor\/nikic\/fast-route\/src\/functions.php(25): Sikelan\\Http\\Router->Sikelan\\Http\\{closure}(Object(FastRoute\\RouteCollector))\n#4 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(98): FastRoute\\simpleDispatcher(Object(Closure))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/Router.php(68): Sikelan\\Http\\Router->buildDispatcher()\n#6 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(44): Sikelan\\Http\\Router->dispatch(Object(Sikelan\\Http\\Request))\n#7 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#8 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#9 {main}"}
+[2026-08-22 01:29:06] [31576] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:29:06] [31576] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:29:06] [31576] [info] AppHook: onInitialize called
+[2026-08-22 01:29:06] [31576] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:29:06] [31576] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:29:06] [31576] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:29:06] [31576] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:29:06] [31576] [info] AppHook: onServerStart called
+[2026-08-22 01:29:06] [31576] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:33:57] [38094] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:33:57] [38094] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:33:57] [38094] [info] AppHook: onInitialize called
+[2026-08-22 01:33:57] [38094] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:33:57] [38094] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:33:57] [38094] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:33:57] [38094] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:33:57] [38094] [info] AppHook: onServerStart called
+[2026-08-22 01:33:57] [38094] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:34:37] [39038] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:34:37] [39038] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:34:37] [39038] [info] AppHook: onInitialize called
+[2026-08-22 01:34:37] [39038] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:34:37] [39038] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:34:37] [39038] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:34:37] [39038] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:34:37] [39038] [info] AppHook: onServerStart called
+[2026-08-22 01:34:37] [39038] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:35:38] [40443] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:35:38] [40443] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:35:38] [40443] [info] AppHook: onInitialize called
+[2026-08-22 01:35:38] [40443] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:35:38] [40443] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:35:38] [40443] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:35:38] [40443] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:35:38] [40443] [info] AppHook: onServerStart called
+[2026-08-22 01:35:38] [40443] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:35:39] [40449] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:35:40] [40448] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:35:44] [40449] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:35:45] [40448] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:36:15] [41397] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:36:15] [41397] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:36:15] [41397] [info] AppHook: onInitialize called
+[2026-08-22 01:36:15] [41397] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:36:15] [41397] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:36:15] [41397] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:36:15] [41397] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:36:15] [41397] [info] AppHook: onServerStart called
+[2026-08-22 01:36:15] [41397] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:36:28] [41403] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:36:33] [41403] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:38:38] [44556] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:38:38] [44556] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:38:38] [44556] [info] AppHook: onInitialize called
+[2026-08-22 01:38:38] [44556] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:38:38] [44556] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:38:38] [44556] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:38:38] [44556] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:38:38] [44556] [info] AppHook: onServerStart called
+[2026-08-22 01:38:38] [44556] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:38:45] [44559] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"disabled"}
+[2026-08-22 01:45:47] [53363] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:45:47] [53363] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:45:47] [53363] [info] AppHook: onInitialize called
+[2026-08-22 01:45:47] [53363] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:45:47] [53363] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:45:47] [53363] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:45:47] [53363] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:45:47] [53363] [info] AppHook: onServerStart called
+[2026-08-22 01:45:47] [53363] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:48:31] [56807] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:48:31] [56807] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:48:31] [56807] [info] AppHook: onInitialize called
+[2026-08-22 01:48:31] [56807] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:48:31] [56807] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:48:31] [56807] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:48:31] [56807] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:48:31] [56807] [info] AppHook: onServerStart called
+[2026-08-22 01:48:31] [56807] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:48:34] [56811] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666"}
+[2026-08-22 01:48:35] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:37] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:37] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:38] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:38] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:55] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:56] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:56] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:56] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:56] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:57] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:57] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:48:57] [56811] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:49:43] [58314] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:49:43] [58314] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:49:43] [58314] [info] AppHook: onInitialize called
+[2026-08-22 01:49:43] [58314] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:49:43] [58314] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:49:43] [58314] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:49:43] [58314] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:49:43] [58314] [info] AppHook: onServerStart called
+[2026-08-22 01:49:43] [58314] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:49:55] [58317] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666"}
+[2026-08-22 01:49:58] [58317] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:50:43] [59612] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:50:43] [59612] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:50:43] [59612] [info] AppHook: onInitialize called
+[2026-08-22 01:50:43] [59612] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:50:43] [59612] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:50:43] [59612] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:50:43] [59612] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:50:43] [59612] [info] AppHook: onServerStart called
+[2026-08-22 01:50:43] [59612] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:50:52] [59615] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666"}
+[2026-08-22 01:58:25] [69710] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:58:25] [69710] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:58:25] [69710] [info] AppHook: onInitialize called
+[2026-08-22 01:58:25] [69710] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:58:25] [69710] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:58:25] [69710] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:58:25] [69710] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:58:25] [69710] [info] AppHook: onServerStart called
+[2026-08-22 01:58:25] [69710] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:58:46] [69714] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666"}
+[2026-08-22 01:58:46] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:46] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:47] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:48] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:48] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:48] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:48] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:50] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:50] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:58:50] [69714] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 01:59:39] [71345] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 01:59:39] [71345] [info] Starting Sikelan framework in http mode
+[2026-08-22 01:59:39] [71345] [info] AppHook: onInitialize called
+[2026-08-22 01:59:39] [71345] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 01:59:39] [71345] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 01:59:39] [71345] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 01:59:39] [71345] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 01:59:39] [71345] [info] AppHook: onServerStart called
+[2026-08-22 01:59:39] [71345] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 01:59:42] [71349] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666"}
+[2026-08-22 02:02:20] [75296] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 02:02:20] [75296] [info] Starting Sikelan framework in http mode
+[2026-08-22 02:02:20] [75296] [info] AppHook: onInitialize called
+[2026-08-22 02:02:20] [75296] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 02:02:20] [75296] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 02:02:20] [75296] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 02:02:20] [75296] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 02:02:20] [75296] [info] AppHook: onServerStart called
+[2026-08-22 02:02:20] [75296] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 02:02:21] [75300] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666"}
+[2026-08-22 02:02:21] [75300] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:02:24] [75300] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:02:25] [75300] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:02:25] [75300] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:02:25] [75300] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:02:25] [75300] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:07:23] [82606] [info] Exchange proxy enabled {"host":"127.0.0.1","port":6666}
+[2026-08-22 02:07:23] [82606] [info] Exchange proxy set to 127.0.0.1:6666
+[2026-08-22 02:07:23] [82606] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}
+[2026-08-22 02:07:23] [82606] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:07:39] [83024] [info] Exchange proxy enabled {"host":"127.0.0.1","port":6666}
+[2026-08-22 02:07:39] [83024] [info] Exchange proxy set to 127.0.0.1:6666
+[2026-08-22 02:07:39] [83024] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}
+[2026-08-22 02:07:39] [83024] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:07:40] [83024] [debug] Exchange HTTP request completed {"exchange":"binance","status":0,"elapsed_ms":64.79,"response_size":0,"response_preview":"","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:07:40] [83024] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:08:13] [83972] [info] Exchange proxy enabled {"host":"127.0.0.1","port":6666}
+[2026-08-22 02:08:13] [83972] [info] Exchange proxy set to 127.0.0.1:6666
+[2026-08-22 02:08:13] [83972] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}
+[2026-08-22 02:08:13] [83972] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:08:13] [83972] [debug] Exchange HTTP request completed {"exchange":"binance","status":200,"elapsed_ms":124.56,"response_size":28,"response_preview":"{\"serverTime\":1787364493553}","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:22:04] [4252] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}
+[2026-08-22 02:22:04] [4252] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:22:04] [4252] [debug] Exchange HTTP request completed {"exchange":"binance","status":0,"elapsed_ms":62.34,"response_size":0,"response_preview":"","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:22:04] [4252] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":0,"body":""}
+[2026-08-22 02:22:24] [4955] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}
+[2026-08-22 02:22:24] [4955] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:22:24] [4955] [debug] Exchange HTTP request completed {"exchange":"binance","status":200,"elapsed_ms":131,"response_size":28,"response_preview":"{\"serverTime\":1787365344883}","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:22:24] [4955] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:22:24] [4955] [debug] Exchange HTTP request completed {"exchange":"binance","status":200,"elapsed_ms":134.48,"response_size":28,"response_preview":"{\"serverTime\":1787365345014}","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:24:08] [7329] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 02:24:08] [7329] [info] Starting Sikelan framework in http mode
+[2026-08-22 02:24:08] [7329] [info] AppHook: onInitialize called
+[2026-08-22 02:24:08] [7329] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 02:24:08] [7329] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 02:24:08] [7329] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 02:24:08] [7329] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 02:24:08] [7329] [info] AppHook: onServerStart called
+[2026-08-22 02:24:08] [7329] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-22 02:24:11] [7333] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}
+[2026-08-22 02:24:11] [7333] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:24:11] [7333] [debug] Exchange HTTP request completed {"exchange":"binance","status":200,"elapsed_ms":137.84,"response_size":28,"response_preview":"{\"serverTime\":1787365451446}","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:24:12] [7333] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:24:12] [7333] [debug] Exchange HTTP request completed {"exchange":"binance","status":200,"elapsed_ms":130.39,"response_size":28,"response_preview":"{\"serverTime\":1787365452735}","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:24:12] [7333] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:24:12] [7333] [debug] Exchange HTTP request completed {"exchange":"binance","status":200,"elapsed_ms":133.32,"response_size":28,"response_preview":"{\"serverTime\":1787365452967}","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:24:13] [7333] [debug] Exchange HTTP request starting {"exchange":"binance","method":"GET","host":"api.binance.com","port":443,"ssl":true,"path":"\/api\/v3\/time","proxy":"127.0.0.1:6666","timeout":10,"body_length":0,"headers":["Content-Type"]}
+[2026-08-22 02:24:13] [7333] [debug] Exchange HTTP request completed {"exchange":"binance","status":200,"elapsed_ms":127.61,"response_size":28,"response_preview":"{\"serverTime\":1787365453160}","via_proxy":"127.0.0.1:6666"}
+[2026-08-22 02:28:24] [14141] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-22 02:28:24] [14141] [info] Starting Sikelan framework in http mode
+[2026-08-22 02:28:24] [14141] [info] AppHook: onInitialize called
+[2026-08-22 02:28:24] [14141] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-22 02:28:24] [14141] [info] Custom process 'heartbeat' registered via hook
+[2026-08-22 02:28:24] [14141] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-22 02:28:24] [14141] [info] Custom process 'data_sync' registered via hook
+[2026-08-22 02:28:24] [14141] [info] AppHook: onServerStart called
+[2026-08-22 02:28:24] [14141] [info] Server starting... {"host":"127.0.0.1","port":9502}

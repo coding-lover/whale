@@ -11,12 +11,6 @@ return [
 
     [
         'method' => 'GET',
-        'path' => '/api/indexes/testSendMsg',
-        'handler' => 'App\Controllers\IndexController@testSendMsg',
-    ],
-
-    [
-        'method' => 'GET',
         'path' => '/api/users',
         'handler' => 'App\Controllers\UserController@index',
     ],
@@ -299,5 +293,32 @@ return [
         'method' => 'GET',
         'path' => '/api/task/async',
         'handler' => 'App\Controllers\TaskController@testAsyncExceptionTask',
+    ],
+
+    // 交易所接口
+    [
+        'method' => 'GET',
+        'path' => '/api/exchanges/{exchange}/ticker/{symbol}',
+        'handler' => 'App\Controllers\ExchangeController@getTicker',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/exchanges/{exchange}/orderbook/{symbol}',
+        'handler' => 'App\Controllers\ExchangeController@getOrderBook',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/exchanges/{exchange}/klines/{symbol}',
+        'handler' => 'App\Controllers\ExchangeController@getKlines',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/exchanges/{exchange}/trades/{symbol}',
+        'handler' => 'App\Controllers\ExchangeController@getTrades',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/exchanges/{exchange}/time',
+        'handler' => 'App\Controllers\ExchangeController@getServerTime',
     ],
 ];

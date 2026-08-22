@@ -1,0 +1,24 @@
+[2026-08-21 13:41:23] [72049] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-21 13:41:23] [72049] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false}
+[2026-08-21 13:41:23] [72049] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-21 13:41:23] [72049] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange
+[2026-08-21 13:43:20] [76780] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/time","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:25] [76780] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/ticker\/price?symbol=BTCUSDT","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:30] [76780] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/depth?symbol=BTCUSDT&limit=5","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:35] [76780] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/klines?symbol=BTCUSDT&interval=1m&limit=5","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:40] [76780] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/trades?symbol=BTCUSDT&limit=5","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:40] [76780] [error] HTTP request failed {"exchange":"okx","url":"https:\/\/www.okx.com\/api\/v5\/public\/time","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:40] [76780] [error] HTTP request failed {"exchange":"okx","url":"https:\/\/www.okx.com\/api\/v5\/market\/ticker?instId=BTC-USDT","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:40] [76780] [error] HTTP request failed {"exchange":"okx","url":"https:\/\/www.okx.com\/api\/v5\/market\/books?instId=BTC-USDT&sz=5","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:40] [76780] [error] HTTP request failed {"exchange":"okx","url":"https:\/\/www.okx.com\/api\/v5\/market\/candles?instId=BTC-USDT&bar=1m&limit=5","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:45] [76780] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/ticker\/price?symbol=BTCUSDT","method":"GET","status":-1,"body":""}
+[2026-08-21 13:43:45] [76780] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-21 13:43:50] [76780] [error] HTTP request failed {"exchange":"binance","url":"https:\/\/api.binance.com\/api\/v3\/ticker\/price?symbol=BTCUSDT","method":"GET","status":-1,"body":""}
+[2026-08-21 13:44:35] [79652] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-21 13:44:35] [79652] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false}
+[2026-08-21 13:44:35] [79652] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-21 13:44:35] [79652] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange
+[2026-08-21 13:45:43] [81717] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-21 13:45:43] [81717] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false}
+[2026-08-21 13:45:43] [81717] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false}
+[2026-08-21 13:45:43] [81717] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange

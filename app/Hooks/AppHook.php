@@ -5,9 +5,7 @@ namespace App\Hooks;
 use App\Process\DataSyncProcess;
 use App\Process\HeartbeatProcess;
 use Sikelan\Hook\AbstractHook;
-use Sikelan\Process\AbstractProcess;
 use Sikelan\Server\Server;
-use Swoole\Process;
 
 /**
  * 应用 Hook 示例
@@ -41,38 +39,16 @@ class AppHook extends AbstractHook
 
     /**
      * 注册自定义事件回调
-     * 
-     * 返回的事件会覆盖框架默认的同名事件回调
-     * 例如这里覆盖了 'request' 事件，自定义请求处理逻辑
+     *
+     * 返回的事件会覆盖框架默认的同名事件回调。
+     * 注意：覆盖 'request' 事件会完全替换框架的路由分发，
+     * 除非你需要完全自定义请求处理，否则不要覆盖此事件。
      */
     public function registerEvents(): array
     {
-        return [
-            // 示例：覆盖默认的 request 事件，添加请求日志
-            'request' => function ($request, $response) {
-                $startTime = microtime(true);
-
-                // 记录请求开始
-                $this->logger->info('Request incoming', [
-                    'method' => $request->server['request_method'] ?? 'GET',
-                    'uri' => $request->server['request_uri'] ?? '/',
-                ]);
-
-                // 这里可以添加自定义的请求处理逻辑
-                // 如果不需要覆盖请求处理，可以不注册此事件
-
-                $response->header('Content-Type', 'application/json');
-                $response->end(json_encode([
-                    'code' => 200,
-                    'message' => 'Handled by AppHook',
-                    'data' => null,
-                ]));
-
-                // 记录请求耗时
-                $duration = round((microtime(true) - $startTime) * 1000, 2);
-                $this->logger->info("Request completed in {$duration}ms");
-            },
-        ];
+        // 不覆盖任何事件，使用框架默认的路由分发
+        // 如需自定义事件回调，在此返回对应的事件映射
+        return [];
     }
 
     /**
