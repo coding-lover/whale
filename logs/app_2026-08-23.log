@@ -1,0 +1,77 @@
+[2026-08-23 04:41:15] [13562] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:41:15] [13562] [info] Starting Sikelan framework in http mode
+[2026-08-23 04:41:15] [13562] [info] AppHook: onInitialize called
+[2026-08-23 04:41:15] [13562] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-23 04:41:15] [13562] [info] Custom process 'heartbeat' registered via hook
+[2026-08-23 04:41:15] [13562] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-23 04:41:15] [13562] [info] Custom process 'data_sync' registered via hook
+[2026-08-23 04:41:15] [13562] [info] AppHook: onServerStart called
+[2026-08-23 04:41:15] [13562] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-23 04:43:06] [15920] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:43:06] [15920] [info] Starting Sikelan framework in http mode
+[2026-08-23 04:43:06] [15920] [info] AppHook: onInitialize called
+[2026-08-23 04:43:06] [15920] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-23 04:43:06] [15920] [info] Custom process 'heartbeat' registered via hook
+[2026-08-23 04:43:06] [15920] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-23 04:43:06] [15920] [info] Custom process 'data_sync' registered via hook
+[2026-08-23 04:43:06] [15920] [info] AppHook: onServerStart called
+[2026-08-23 04:43:06] [15920] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:52:12] [27777] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:55:42] [32485] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 04:55:42] [32485] [info] Starting Sikelan framework in http mode
+[2026-08-23 04:55:42] [32485] [info] AppHook: onInitialize called
+[2026-08-23 04:55:42] [32485] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-23 04:55:42] [32485] [info] Custom process 'heartbeat' registered via hook
+[2026-08-23 04:55:42] [32485] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-23 04:55:42] [32485] [info] Custom process 'data_sync' registered via hook
+[2026-08-23 04:55:42] [32485] [info] AppHook: onServerStart called
+[2026-08-23 04:55:42] [32485] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-23 04:55:44] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 04:55:46] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 04:55:46] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 04:55:46] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 04:55:46] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 04:55:47] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 04:55:47] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 04:55:48] [32489] [error] Request handler error: Call to undefined method App\Services\Exchanges\TradingSymbol::toBinance() {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#2 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(252): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#4 {main}"}
+[2026-08-23 05:06:52] [47293] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:06:52] [47293] [info] Starting Sikelan framework in http mode
+[2026-08-23 05:06:52] [47293] [info] AppHook: onInitialize called
+[2026-08-23 05:06:52] [47293] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-23 05:06:52] [47293] [info] Custom process 'heartbeat' registered via hook
+[2026-08-23 05:06:52] [47293] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-23 05:06:52] [47293] [info] Custom process 'data_sync' registered via hook
+[2026-08-23 05:06:52] [47293] [info] AppHook: onServerStart called
+[2026-08-23 05:06:52] [47293] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:11:00] [52510] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:14:15] [57201] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-23 05:14:15] [57201] [info] Starting Sikelan framework in http mode
+[2026-08-23 05:14:15] [57201] [info] AppHook: onInitialize called
+[2026-08-23 05:14:15] [57201] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-23 05:14:15] [57201] [info] Custom process 'heartbeat' registered via hook
+[2026-08-23 05:14:15] [57201] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-23 05:14:15] [57201] [info] Custom process 'data_sync' registered via hook
+[2026-08-23 05:14:15] [57201] [info] AppHook: onServerStart called
+[2026-08-23 05:14:15] [57201] [info] Server starting... {"host":"127.0.0.1","port":9502}

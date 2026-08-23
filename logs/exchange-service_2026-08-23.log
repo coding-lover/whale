@@ -1,0 +1,10 @@
+[2026-08-23 04:52:12] [27777] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"disabled"}
+[2026-08-23 04:52:12] [27777] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"disabled"}
+[2026-08-23 04:52:12] [27777] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"disabled"}
+[2026-08-23 04:52:12] [27777] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange
+[2026-08-23 05:06:56] [47297] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}
+[2026-08-23 05:11:00] [52510] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"disabled"}
+[2026-08-23 05:11:00] [52510] [info] Exchange 'okx' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\OkxExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"disabled"}
+[2026-08-23 05:11:00] [52510] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"disabled"}
+[2026-08-23 05:11:00] [52510] [info] Custom exchange adapter registered: mock => Sikelan\Tests\Stest\MockExchange
+[2026-08-23 05:14:18] [57205] [info] Exchange 'binance' instantiated {"class":"App\\Services\\Exchanges\\Adapters\\BinanceExchange","testnet":false,"proxy":"127.0.0.1:6666","debug_log":"enabled"}

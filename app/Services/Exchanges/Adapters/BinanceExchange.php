@@ -4,6 +4,7 @@ namespace App\Services\Exchanges\Adapters;
 
 use App\Services\Exchanges\AbstractExchange;
 use App\Services\Exchanges\ExchangeException;
+use App\Services\Exchanges\Formatters\BinanceSymbolFormatter;
 use Sikelan\Core\Config;
 use Sikelan\Core\Logger;
 
@@ -26,7 +27,7 @@ class BinanceExchange extends AbstractExchange
      */
     public function __construct(Config $appConfig, Logger $logger)
     {
-        parent::__construct($appConfig, $logger);
+        parent::__construct($appConfig, $logger, new BinanceSymbolFormatter());
 
         // Binance 默认速率限制：10 次/秒，即每 100ms 一次
         $this->rateLimitMs = $this->config['rate_limit_ms'] ?? 100;
@@ -123,14 +124,6 @@ class BinanceExchange extends AbstractExchange
     }
 
     // ==================== 格式转换 ====================
-
-    /**
-     * BTC/USDT → BTCUSDT
-     */
-    protected function formatSymbol(string $symbol): string
-    {
-        return str_replace('/', '', strtoupper($symbol));
-    }
 
     /**
      * Binance K线周期与统一格式一致，直接返回

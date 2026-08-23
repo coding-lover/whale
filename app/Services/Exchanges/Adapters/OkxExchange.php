@@ -4,6 +4,7 @@ namespace App\Services\Exchanges\Adapters;
 
 use App\Services\Exchanges\AbstractExchange;
 use App\Services\Exchanges\ExchangeException;
+use App\Services\Exchanges\Formatters\OkxSymbolFormatter;
 use Sikelan\Core\Config;
 use Sikelan\Core\Logger;
 
@@ -31,7 +32,7 @@ class OkxExchange extends AbstractExchange
      */
     public function __construct(Config $appConfig, Logger $logger)
     {
-        parent::__construct($appConfig, $logger);
+        parent::__construct($appConfig, $logger, new OkxSymbolFormatter());
 
         // OKX 默认速率限制：20 次/2秒，约每 100ms 一次
         $this->rateLimitMs = $this->config['rate_limit_ms'] ?? 100;
@@ -148,14 +149,6 @@ class OkxExchange extends AbstractExchange
     }
 
     // ==================== 格式转换 ====================
-
-    /**
-     * BTC/USDT → BTC-USDT
-     */
-    protected function formatSymbol(string $symbol): string
-    {
-        return str_replace('/', '-', strtoupper($symbol));
-    }
 
     /**
      * 统一K线周期 → OKX 原生格式

@@ -2,6 +2,8 @@
 
 namespace App\Services\Exchanges;
 
+use App\Services\Exchanges\Formatters\SymbolFormatterInterface;
+use App\Services\Exchanges\TradingSymbol;
 use Swoole\Coroutine\Http\Client;
 use Sikelan\Core\Config;
 use Sikelan\Core\Logger;
@@ -99,15 +101,24 @@ abstract class AbstractExchange implements ExchangeInterface
     protected bool $debugLog = false;
 
     /**
+     * 交易对格式化策略
+     *
+     * 通过依赖注入，各适配器在构造时传入对应的 Formatter
+     */
+    protected SymbolFormatterInterface $symbolFormatter;
+
+    /**
      * 构造方法
      *
      * @param Config $appConfig 框架配置实例
      * @param Logger $logger 日志实例
+     * @param SymbolFormatterInterface $symbolFormatter 交易对格式化策略
      */
-    public function __construct(Config $appConfig, Logger $logger)
+    public function __construct(Config $appConfig, Logger $logger, SymbolFormatterInterface $symbolFormatter)
     {
         $this->appConfig = $appConfig;
         $this->logger = $logger;
+        $this->symbolFormatter = $symbolFormatter;
 
         // 从配置文件加载交易所参数（配置键格式：exchanges.{交易所名}）
         $configKey = 'exchanges.' . $this->getName();
@@ -392,14 +403,16 @@ abstract class AbstractExchange implements ExchangeInterface
     /**
      * 将统一交易对格式转为交易所原生格式
      *
-     * 统一格式：BTC/USDT
-     * Binance：BTCUSDT
-     * OKX：BTC-USDT
+     * 通过注入的 SymbolFormatterInterface 策略实现转换，
+     * 子类无需覆写此方法。新增交易所只需创建对应 Formatter 并注入。
      *
-     * @param string $symbol 统一格式交易对
+     * @param string $symbol 统一格式交易对（如 BTC/USDT:SWAP）
      * @return string 交易所原生格式
      */
-    abstract protected function formatSymbol(string $symbol): string;
+    public function formatSymbol(string $symbol): string
+    {
+        return $this->symbolFormatter->format(TradingSymbol::parse($symbol));
+    }
 
     /**
      * 将统一K线周期转为交易所原生格式

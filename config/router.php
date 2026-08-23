@@ -8,6 +8,12 @@ return [
         'path' => '/api/indexes/testSendMsg',
         'handler' => 'App\Controllers\IndexController@testSendMsg',
     ],
+    [
+        'method' => 'GET',
+        'path' => '/api/indexes/index',
+        'handler' => 'App\Controllers\IndexController@index',
+    ],
+
 
     [
         'method' => 'GET',
