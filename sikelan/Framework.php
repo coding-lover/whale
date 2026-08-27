@@ -136,7 +136,10 @@ class Framework
         require __DIR__ . '/Core/constants.php';
         require __DIR__ . '/Core/common.php';
         // 加载应用层公共函数（如 app()、exchange()、cache() 等快捷函数）
-        require APP_PATH . '/common.php';
+        $appCommonFile = APP_PATH . '/common.php';
+        if (file_exists($appCommonFile)) {
+            require $appCommonFile;
+        }
     }
 
     /**

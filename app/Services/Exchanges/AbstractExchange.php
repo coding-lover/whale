@@ -415,6 +415,26 @@ abstract class AbstractExchange implements ExchangeInterface
     }
 
     /**
+     * 将交易所原生交易对格式解析为本地系统的标准交易对（反向转换）
+     *
+     * 对 Binance 这类无分隔符的交易所，现货/永续合约无法从格式区分，
+     * 可通过 $defaultType 指定默认类型（默认 TYPE_SPOT）。
+     *
+     * 使用示例：
+     *   $binance->parseSymbol('BTCUSDT_250328');      // BTC/USDT:FUT-250328
+     *   $okx->parseSymbol('BTC-USDT-SWAP');           // BTC/USDT:SWAP
+     *   $binance->parseSymbol('BTCUSDT', TYPE_SWAP);  // BTC/USDT:SWAP
+     *
+     * @param string $nativeSymbol 交易所原生格式
+     * @param string $defaultType   无法推断类型时的默认类型
+     * @return TradingSymbol 标准交易对对象（可转字符串得到标准格式）
+     */
+    public function parseSymbol(string $nativeSymbol, string $defaultType = TradingSymbol::TYPE_SPOT): TradingSymbol
+    {
+        return $this->symbolFormatter->parseExchangeSymbol($nativeSymbol, $defaultType);
+    }
+
+    /**
      * 将统一K线周期转为交易所原生格式
      *
      * 统一格式：1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w

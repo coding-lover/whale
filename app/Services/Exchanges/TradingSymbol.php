@@ -302,6 +302,55 @@ class TradingSymbol
         return $this->type === self::TYPE_FUTURES;
     }
 
+    /**
+     * 将显式交割日期归一化为周期别名（若匹配）
+     *
+     * 当从交易所原生格式反向解析出交割合约时，日期是显式的（如 FUT-260925）。
+     * 但本地系统的标准格式优先使用周期别名（QUARTER 等），
+     * 此方法将显式日期与 5 个周期别名的推算日期逐一比较，
+     * 匹配成功则将 $deliveryDate 清空，改用 $deliveryPeriod 表示，
+     * 这样 __toString() 输出就会是 :QUARTER 而不是 :FUT-日期。
+     *
+     * 匹配顺序：this_week → next_week → quarter → bi_quarter → ci_quarter
+     * （因为 next_week 有可能与某个季度合约的最后一个周五恰好重合，
+     *   按"就近优先"原则匹配小的周期。）
+     *
+     * @return bool 是否成功归一化为周期别名
+     */
+    public function normalizeToPeriodAlias(): bool
+    {
+        if ($this->type !== self::TYPE_FUTURES) {
+            return false;
+        }
+        if ($this->deliveryPeriod !== null) {
+            // 已经是周期别名，无需再归一化
+            return true;
+        }
+        if ($this->deliveryDate === null) {
+            return false;
+        }
+
+        $periods = [
+            self::PERIOD_THIS_WEEK,
+            self::PERIOD_NEXT_WEEK,
+            self::PERIOD_QUARTER,
+            self::PERIOD_BI_QUARTER,
+            self::PERIOD_CI_QUARTER,
+        ];
+
+        foreach ($periods as $period) {
+            $resolvedDate = $this->resolveDeliveryDate($period);
+            if ($resolvedDate === $this->deliveryDate) {
+                $this->deliveryPeriod = $period;
+                $this->deliveryDate = null;
+                return true;
+            }
+        }
+
+        // 不匹配任何周期别名，保留显式日期
+        return false;
+    }
+
     // ==================== 交割周期日期推算 ====================
 
     /**
