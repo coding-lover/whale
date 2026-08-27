@@ -131,6 +131,63 @@ class Server
         // 绑定自定义进程到 Swoole Server
         $this->attachProcesses();
 
+        /**
+         * 启动前事件回调兜底检查（防止用户未注册必需事件导致 PHP Fatal 或运行期断连）
+         *
+         * Swoole 三种 Server 必需事件：
+         *   1. 纯 TCP (Swoole\Server，非 Http/WebSocket 子类)：强制需要 onReceive，否则 $server->start() 直接 Fatal
+         *   2. WebSocket：需要 onMessage / onOpen 才能处理客户端消息，否则接入即报错（虽不会启动 fatal）
+         *   3. HTTP：on(Request) 由 Framework::registerEvents 默认注册，一般不需要兜底
+         */
+        $isTcp       = ($this->server instanceof SwooleServer && !$this->server instanceof HttpServer && !$this->server instanceof WebSocketServer);
+        $isWebSocket = ($this->server instanceof WebSocketServer);
+
+        // --- 兜底 1：TCP 模式必需 onReceive ---
+        if ($isTcp && !$this->eventRegister->has('receive')) {
+            $this->logger->warning(
+                'TCP server mode: no "receive" event registered, using DEFAULT echo handler (please ' .
+                'register your own callback via $server->on(\'receive\', $fn) or in your Hook::registerEvents())'
+            );
+            $this->server->on('receive', function (SwooleServer $server, int $fd, int $reactorId, string $data): void {
+                $len = strlen($data);
+                $this->logger->info('[DEFAULT TCP receive]', [
+                    'fd' => $fd,
+                    'reactor' => $reactorId,
+                    'bytes' => $len,
+                    'preview' => mb_substr($data, 0, 200),
+                ]);
+                // 默认回显一条提示，避免客户端一直等待
+                $server->send($fd, "[Sikelan TCP Default Handler] Received {$len} bytes; register 'receive' event for business logic.\n");
+            });
+        }
+
+        // --- 兜底 2：WebSocket 模式必需 onMessage / onOpen ---
+        if ($isWebSocket) {
+            if (!$this->eventRegister->has('message')) {
+                $this->logger->warning(
+                    'WebSocket server mode: no "message" event registered, using DEFAULT echo handler (please ' .
+                    'register your own callback via $server->on(\'message\', $fn) or in your Hook::registerEvents())'
+                );
+                $this->server->on('message', function (WebSocketServer $server, \Swoole\WebSocket\Frame $frame): void {
+                    $this->logger->info('[DEFAULT WebSocket message]', [
+                        'fd' => $frame->fd,
+                        'opcode' => $frame->opcode,
+                        'bytes' => strlen($frame->data),
+                    ]);
+                    $server->push($frame->fd, "[Sikelan WS Default Handler] Echo: " . $frame->data);
+                });
+            }
+            if (!$this->eventRegister->has('open')) {
+                $this->logger->debug('WebSocket: no "open" event registered, using default connect ack');
+                $this->server->on('open', function (WebSocketServer $server, \Swoole\Http\Request $request): void {
+                    $this->logger->info('[DEFAULT WebSocket open] client connected', [
+                        'fd' => $request->fd,
+                        'remote_ip' => $request->header['x-forwarded-for'] ?? ($request->server['remote_addr'] ?? ''),
+                    ]);
+                });
+            }
+        }
+
         $this->server->start();
     }
 

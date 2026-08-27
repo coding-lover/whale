@@ -10,3 +10,73 @@
 [2026-08-27 08:21:29] [99114] [info] Hook loaded: App\Hooks\AppHook
 [2026-08-27 08:21:29] [99114] [info] Hook loaded: App\Hooks\AppHook
 [2026-08-27 08:21:29] [99114] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 08:30:55] [11592] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 08:30:55] [11592] [info] Starting Sikelan framework in http mode
+[2026-08-27 08:30:55] [11592] [info] AppHook: onInitialize called
+[2026-08-27 08:30:55] [11592] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-27 08:30:55] [11592] [info] Custom process 'heartbeat' registered via hook
+[2026-08-27 08:30:55] [11592] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-27 08:30:55] [11592] [info] Custom process 'data_sync' registered via hook
+[2026-08-27 08:30:55] [11592] [info] AppHook: onServerStart called
+[2026-08-27 08:30:55] [11592] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 08:37:54] [20204] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 08:37:54] [20204] [info] Starting Sikelan framework in http mode
+[2026-08-27 08:37:54] [20204] [info] AppHook: onInitialize called
+[2026-08-27 08:37:54] [20204] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-27 08:37:54] [20204] [info] Custom process 'heartbeat' registered via hook
+[2026-08-27 08:37:54] [20204] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-27 08:37:54] [20204] [info] Custom process 'data_sync' registered via hook
+[2026-08-27 08:37:54] [20204] [info] AppHook: onServerStart called
+[2026-08-27 08:37:54] [20204] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:08:22] [58598] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:08:22] [58598] [info] Starting Sikelan framework in http mode
+[2026-08-27 09:08:22] [58598] [info] AppHook: onInitialize called
+[2026-08-27 09:08:22] [58598] [debug] Process 'heartbeat' attached to Swoole Server
+[2026-08-27 09:08:22] [58598] [info] Custom process 'heartbeat' registered via hook
+[2026-08-27 09:08:22] [58598] [debug] Process 'data_sync' attached to Swoole Server
+[2026-08-27 09:08:22] [58598] [info] Custom process 'data_sync' registered via hook
+[2026-08-27 09:08:22] [58598] [info] AppHook: onServerStart called
+[2026-08-27 09:08:22] [58598] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:31:25] [87474] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:31:25] [87474] [info] Starting Sikelan framework in http mode
+[2026-08-27 09:31:25] [87474] [info] AppHook: onInitialize called
+[2026-08-27 09:31:25] [87474] [info] AppHook: onServerStart called
+[2026-08-27 09:31:25] [87474] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:32:29] [88767] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:32:29] [88767] [info] Starting Sikelan framework in http mode
+[2026-08-27 09:32:29] [88767] [info] AppHook: onInitialize called
+[2026-08-27 09:32:29] [88767] [info] AppHook: onServerStart called
+[2026-08-27 09:32:29] [88767] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:40:24] [97896] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:40:24] [97896] [info] Starting Sikelan framework in http mode
+[2026-08-27 09:40:24] [97896] [info] AppHook: onInitialize called
+[2026-08-27 09:40:24] [97896] [info] AppHook: onServerStart called
+[2026-08-27 09:40:24] [97896] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:40:40] [98746] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:40:50] [98746] [info] Starting Sikelan framework in tcp mode
+[2026-08-27 09:40:52] [98746] [info] AppHook: onInitialize called
+[2026-08-27 09:40:56] [98746] [info] AppHook: onServerStart called
+[2026-08-27 09:40:57] [98746] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:41:30] [116] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:41:30] [116] [info] Starting Sikelan framework in tcp mode
+[2026-08-27 09:41:30] [116] [info] AppHook: onInitialize called
+[2026-08-27 09:41:30] [116] [info] AppHook: onServerStart called
+[2026-08-27 09:41:30] [116] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:48:33] [9259] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:48:33] [9259] [info] Starting Sikelan framework in tcp mode
+[2026-08-27 09:48:33] [9259] [info] AppHook: onInitialize called
+[2026-08-27 09:48:33] [9259] [info] AppHook: onServerStart called
+[2026-08-27 09:48:33] [9259] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:48:33] [9259] [warning] TCP server mode: no "receive" event registered, using DEFAULT echo handler (please register your own callback via $server->on('receive', $fn) or in your Hook::registerEvents())
+[2026-08-27 09:52:48] [14572] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:52:48] [14572] [info] Starting Sikelan framework in tcp mode
+[2026-08-27 09:52:48] [14572] [info] AppHook: onInitialize called
+[2026-08-27 09:52:48] [14572] [info] AppHook: onServerStart called
+[2026-08-27 09:52:48] [14572] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:52:48] [14572] [warning] TCP server mode: no "receive" event registered, using DEFAULT echo handler (please register your own callback via $server->on('receive', $fn) or in your Hook::registerEvents())
+[2026-08-27 09:54:29] [16712] [info] Hook loaded: App\Hooks\AppHook
+[2026-08-27 09:54:29] [16712] [info] Starting Sikelan framework in tcp mode
+[2026-08-27 09:54:29] [16712] [info] AppHook: onInitialize called
+[2026-08-27 09:54:29] [16712] [info] AppHook: onServerStart called
+[2026-08-27 09:54:29] [16712] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-08-27 09:54:29] [16712] [warning] TCP server mode: no "receive" event registered, using DEFAULT echo handler (please register your own callback via $server->on('receive', $fn) or in your Hook::registerEvents())

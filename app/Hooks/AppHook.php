@@ -60,10 +60,10 @@ class AppHook extends AbstractHook
     {
         return [
             // 心跳进程：每 60 秒输出一次心跳
-            new HeartbeatProcess(),
+            //new HeartbeatProcess(),
 
             // 数据同步进程：每 300 秒执行一次同步
-            new DataSyncProcess(),
+            //new DataSyncProcess(),
         ];
     }
 }

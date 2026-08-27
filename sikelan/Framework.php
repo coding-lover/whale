@@ -54,6 +54,8 @@ class Framework
 
     protected string $environment = 'development';
 
+    protected string $serverMode = 'http';
+
     protected int $startTime = 0;
 
     private static ?self $_instance = null;
@@ -193,6 +195,9 @@ class Framework
      */
     public function run(string $mode = 'http'): void
     {
+        // 保存当前服务器运行模式，用于 getStatus()/printStatus() 显示
+        $this->serverMode = $mode;
+
         // 创建服务器实例
         $this->server = $this->container->get(Server::class)->create($mode);
         $this->startTime = time();
@@ -449,11 +454,12 @@ class Framework
         }
 
         return [
-            'timestamp' => time(),
             'datetime' => date('Y-m-d H:i:s'),
+            'timestamp' => time(),
             'uptime' => $this->startTime > 0 ? time() - $this->startTime : 0,
             'uptime_human' => $this->formatUptime($this->startTime > 0 ? time() - $this->startTime : 0),
             'main_server' => $serverType,
+            'server_mode' => $this->serverMode,
             'listen_address' => $serverConfig['host'] ?? '0.0.0.0',
             'listen_port' => $serverConfig['port'] ?? 9501,
             'worker_num' => $settings['worker_num'] ?? swoole_cpu_num() * 2,
@@ -461,14 +467,14 @@ class Framework
             'max_wait_time' => $settings['max_wait_time'] ?? 3,
             'enable_static_handler' => $settings['enable_static_handler'] ?? 1,
             'max_request' => $settings['max_request'] ?? 10000,
-            'pid_file' => $settings['pid_file'] ?? RUNTIME_PATH . '/pid.pid',
-            'log_file' => $settings['log_file'] ?? LOG_PATH . '/swoole.log',
             'run_at_user' => posix_getpwuid(posix_geteuid())['name'] ?? 'unknown',
             'daemonize' => $settings['daemonize'] ?? false,
             'swoole_version' => SWOOLE_VERSION,
             'php_version' => PHP_VERSION,
             'framework_version' => '1.0.0',
             'environment' => $this->environment,
+            'pid_file' => $settings['pid_file'] ?? RUNTIME_PATH . '/pid.pid',
+            'log_file' => $settings['log_file'] ?? LOG_PATH . '/swoole.log',
             'temp_dir' => $settings['temp_dir'] ?? RUNTIME_PATH,
             'log_dir' => $this->config->get('app.log_path', LOG_PATH),
             'memory' => [
