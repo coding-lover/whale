@@ -1,28 +1,27 @@
 #!/usr/bin/env php
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
+/**
+ * Swoole HTTP Server 启动入口（生产/开发共用）。
+ *
+ * ⭐ 入口保持精简：文件加载交给 Bootstrap；业务逻辑交给 Framework。
+ * 参数解析（--env / mode）保留在此层（和具体启动行为强相关，不属于通用引导职责）。
+ */
 
+use Sikelan\Core\Bootstrap;
 use Sikelan\Framework;
 
-if (extension_loaded('xdebug')) {
-    @ini_set('xdebug.mode', 'off');
-    @ini_set('xdebug.start_with_request', 'no');
+// 引导：autoload → constants → common → app common → xdebug（CLI 下会提示）
+require __DIR__ . '/../sikelan/Core/Bootstrap.php';
+Bootstrap::cli(__DIR__, true);
 
-    if (php_sapi_name() === 'cli') {
-        echo "\033[33m⚠ Warning: Xdebug is loaded. It may cause issues with Swoole coroutines.\033[0m\n";
-        echo "\033[33m  Please disable Xdebug in php.ini: set xdebug.mode=off\033[0m\n\n";
-    }
-}
-
-$mode = 'http';
+// ---- 命令行参数解析 ----
+$mode        = 'http';
 $environment = '';
-
 foreach ($argv as $i => $arg) {
     if ($i === 0) {
         continue;
     }
-
     if (strpos($arg, '--env=') === 0) {
         $environment = substr($arg, 6);
     } elseif ($arg === '--env' && isset($argv[$i + 1])) {
@@ -36,6 +35,6 @@ foreach ($argv as $i => $arg) {
     }
 }
 
+// ---- 启动 Server ----
 $app = Framework::getInstance($environment);
-
 $app->run($mode);

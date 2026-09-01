@@ -362,13 +362,29 @@ class OkxExchange extends AbstractExchange
         return $this->normalizeOrderBook($raw);
     }
 
-    public function getKlines(string $symbol, string $interval, int $limit = 100): array
-    {
-        $raw = $this->request('/api/v5/market/candles', 'GET', [
+    public function getKlines(
+        string $symbol,
+        string $interval,
+        int $limit = 100,
+        ?int $startMs = null,
+        ?int $endMs = null
+    ): array {
+        $params = [
             'instId' => $this->formatSymbol($symbol),
-            'bar' => $this->formatInterval($interval),
-            'limit' => $limit,
-        ], false);
+            'bar'    => $this->formatInterval($interval),
+            'limit'  => $limit,
+        ];
+        // OKX /api/v5/market/candles：before = 起始（时间早于这个 ts 之前，毫秒）
+        //                      after  = 结束（时间晚于这个 ts 之后，毫秒）
+        // 注意 OKX 方向与 Binance 相反：before 是更小时间（更远的过去），after 是更新时间。
+        // OKX 文档：before / after 都按 millisecond 传入；两者指定时返回 [after, before] 区间的 K 线
+        if ($startMs !== null) {
+            $params['after'] = (string) $startMs;   // ≥ after，即较"老"（时间数字更小）→ 从 startMs 开始向新
+        }
+        if ($endMs !== null) {
+            $params['before'] = (string) $endMs;    // ≤ before，即更"老"；到 endMs 为止
+        }
+        $raw = $this->request('/api/v5/market/candles', 'GET', $params, false);
 
         return $this->normalizeKlines($raw);
     }

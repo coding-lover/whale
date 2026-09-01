@@ -1,35 +1,22 @@
 #!/usr/bin/env php
 <?php
 
-$autoloadPath = __DIR__ . '/../vendor/autoload.php';
+/**
+ * Sikelan CLI 命令入口
+ *
+ * ⭐ 保持极简：所有文件加载、常量、xdebug 处理都已内聚到 Sikelan\Core\Bootstrap。
+ * 未来要改加载顺序 / 新增预处理，**不要在这里加代码**，去改 Bootstrap。
+ */
 
-if (!file_exists($autoloadPath)) {
-    echo "\033[31mError: vendor/autoload.php not found.\033[0m\n";
-    echo "Please run 'composer install' first.\n";
-    exit(1);
-}
-
-require $autoloadPath;
-
-// 加载系统常量和公用函数
-$constantsPath = __DIR__ . '/../sikelan/Core/constants.php';
-if (file_exists($constantsPath)) {
-    require_once $constantsPath;
-}
-
-$commonPath = __DIR__ . '/../sikelan/Core/common.php';
-if (file_exists($commonPath)) {
-    require_once $commonPath;
-}
-
+use Sikelan\Core\Bootstrap;
 use Sikelan\Command\CommandRunner;
 
-if (extension_loaded('xdebug')) {
-    @ini_set('xdebug.mode', 'off');
-    @ini_set('xdebug.start_with_request', 'no');
-}
+// 引导：autoload → constants → common → app common → xdebug 关闭
+require __DIR__ . '/../sikelan/Core/Bootstrap.php';
+Bootstrap::cli(__DIR__, false);
 
-$runner = CommandRunner::getInstance();
+// 运行命令
+$runner   = CommandRunner::getInstance();
 $exitCode = $runner->run($argv);
 
 exit($exitCode);

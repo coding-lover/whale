@@ -6,6 +6,7 @@ use App\Services\Exchanges\TradingSymbol;
 use App\Services\Trader\BacktestServiceProvider;
 use App\Services\Trader\Market\Candle;
 use App\Services\Trader\PerformanceReport;
+use App\Services\Trader\Strategy\IndicatorCalculator;
 use App\Services\Trader\Strategy\StrategyInterface;
 use App\Services\Trader\Strategies\BollingerRsiMeanReversionStrategy;
 use App\Services\Trader\Strategies\EmaCrossStrategy;
@@ -94,28 +95,41 @@ class StrategyRegistrationTest extends TestCase
         ], 'DoesNotExist');
     }
 
-    // ----- 3. Bollinger 策略技术指标：数学正确性 -----
+    // ----- 3. 指标计算数学正确性（统一通过 IndicatorCalculator 调用 PHP trader 扩展） -----
+
+    /**
+     * 前置条件：当前环境必须已加载 trader 扩展，否则整组指标测试 markTestSkipped。
+     */
+    private function requireTraderOrSkip(): void
+    {
+        if (!extension_loaded('trader')) {
+            $this->markTestSkipped('当前 PHP 未加载 trader 扩展（pecl install trader），跳过指标计算测试。');
+        }
+    }
 
     public function testSmaMath(): void
     {
+        $this->requireTraderOrSkip();
         // SMA([1,2,3,4,5],3) -> 最后一个 = (3+4+5)/3 = 4
-        $smaArr = BollingerRsiMeanReversionStrategy::sma([1,2,3,4,5], 3);
+        $smaArr = IndicatorCalculator::sma([1,2,3,4,5], 3);
         $last = end($smaArr);
         $this->assertEqualsWithDelta(4.0, $last, 1e-6);
     }
 
     public function testRollingStdMath(): void
     {
+        $this->requireTraderOrSkip();
         // [1,2,3], period=3 → 方差 = ( (1-2)² + (2-2)² + (3-2)² ) / (3-1) = (1+0+1)/2 = 1 → σ = 1
-        $stdArr = BollingerRsiMeanReversionStrategy::rollingStd([1,2,3], 3);
+        $stdArr = IndicatorCalculator::stddev([1,2,3], 3);
         $last = end($stdArr);
         $this->assertEqualsWithDelta(1.0, $last, 1e-6);
     }
 
     public function testRsiAlwaysFlat50IfPriceUnchanged(): void
     {
+        $this->requireTraderOrSkip();
         $arr = array_fill(0, 30, 100.0); // 30 根都 100
-        $rsi = BollingerRsiMeanReversionStrategy::rsi($arr, 14);
+        $rsi = IndicatorCalculator::rsi($arr, 14);
         // 所有值都应该在 [49.999, 50.001] 区间（理论上完全持平）
         foreach ($rsi as $i => $v) {
             $this->assertEqualsWithDelta(50.0, $v, 0.01, "RSI at index {$i} should be 50 for flat price");
@@ -126,6 +140,9 @@ class StrategyRegistrationTest extends TestCase
 
     public function testE2eRegisteredStrategyRunsAndProducesTrades(): void
     {
+        if (!extension_loaded('trader')) {
+            $this->markTestSkipped('缺少 trader 扩展，跳过 Backtesting E2E 测试。');
+        }
         // 构造 400 根 5m 价格，合成"布林带周期性跌破"形态：
         //  Phase A (i<150): 横盘 ≈100 → Phase B(150-300): 先跌破到 92，再回到 100（均值回归完成1笔）
         //                    → Phase C(>300) 再跌破再回拉（2 笔完整）

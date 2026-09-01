@@ -20,6 +20,7 @@ class CommandRunner
     {
         $this->commandManager = CommandManager::getInstance();
         $this->registerDefaultCommands();
+        $this->registerAppCommands();
     }
 
     private function registerDefaultCommands(): void
@@ -36,6 +37,56 @@ class CommandRunner
 
         foreach ($defaultCommands as $command) {
             $this->commandManager->addCommand($command);
+        }
+    }
+
+    /**
+     * 自动注册应用层命令（App\Commands\*，全部放在 app/Commands/*.php，实现 CommandInterface）。
+     *
+     * 设计目的（开闭）：业务团队要加新的 CLI 命令，只需要在 app/Commands/ 下建文件，
+     * 不用改 sikelan/ 的 CommandRunner 代码。
+     *
+     * 规则：
+     *   - 目录：APP_PATH . '/Commands'（缺省则跳过，不报错）
+     *   - 命名空间：App\Commands\*（必须和 PSR-4 对齐）
+     *   - 类型约束：implements CommandInterface；否则会 skip 并警告（debug 模式下）
+     *   - 重名冲突：若应用层命令与 sikelan 默认命令同名（不推荐），应用层会覆盖默认，
+     *     这样开发者可以自行扩展。
+     */
+    private function registerAppCommands(): void
+    {
+        // 入口里如果没走 constants.php，也要兼容（某些极简脚本可能直接 new CommandRunner）
+        $appPath = defined('APP_PATH') ? APP_PATH : (dirname(__DIR__, 2) . '/app');
+        $dir = $appPath . '/Commands';
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        // 只遍历顶层 .php 文件（不递归，避免子目录混入非命令类）
+        $files = glob($dir . '/*.php');
+        if ($files === false) {
+            return;
+        }
+        foreach ($files as $file) {
+            $className = 'App\\Commands\\' . basename($file, '.php');
+            if (!class_exists($className, true)) {
+                // 类不存在：可能文件内容没正确命名空间 → 给 warning，但不 fatal 让其他命令可用
+                trigger_error(
+                    "命令文件未找到对应类 {$className}（路径 {$file}）。请检查 PSR-4 命名空间 App\\Commands 是否正确。",
+                    E_USER_WARNING
+                );
+                continue;
+            }
+            if (!is_a($className, CommandInterface::class, true)) {
+                trigger_error(
+                    "{$className} 未实现 " . CommandInterface::class . '，跳过注册为 CLI 命令。',
+                    E_USER_WARNING
+                );
+                continue;
+            }
+            /** @var CommandInterface $instance */
+            $instance = new $className();
+            $this->commandManager->addCommand($instance);
         }
     }
 

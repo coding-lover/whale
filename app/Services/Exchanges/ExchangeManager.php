@@ -456,11 +456,18 @@ class ExchangeManager
     }
 
     /**
-     * 获取K线数据（通过默认交易所）
+     * 获取K线数据（通过默认交易所）。
+     *
+     * ⭐ 跨 1000 根分页：调用方传入 $startMs/$endMs 明确时间窗口；否则只返回最新 limit 根。
      */
-    public function getKlines(string $symbol, string $interval, int $limit = 100): array
-    {
-        return $this->getDefaultExchange()->getKlines($symbol, $interval, $limit);
+    public function getKlines(
+        string $symbol,
+        string $interval,
+        int $limit = 100,
+        ?int $startMs = null,
+        ?int $endMs = null
+    ): array {
+        return $this->getDefaultExchange()->getKlines($symbol, $interval, $limit, $startMs, $endMs);
     }
 
     /**

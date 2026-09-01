@@ -285,13 +285,27 @@ class BinanceExchange extends AbstractExchange
         return $this->normalizeOrderBook($raw);
     }
 
-    public function getKlines(string $symbol, string $interval, int $limit = 100): array
-    {
-        $raw = $this->request('/api/v3/klines', 'GET', [
-            'symbol' => $this->formatSymbol($symbol),
+    public function getKlines(
+        string $symbol,
+        string $interval,
+        int $limit = 100,
+        ?int $startMs = null,
+        ?int $endMs = null
+    ): array {
+        $params = [
+            'symbol'   => $this->formatSymbol($symbol),
             'interval' => $this->formatInterval($interval),
-            'limit' => $limit,
-        ], false);
+            'limit'    => $limit,
+        ];
+        // Binance /api/v3/klines 原生支持 startTime / endTime（毫秒，都为含）
+        // 传 null 时省略，保持和原先行为一致（最新 limit 根）
+        if ($startMs !== null) {
+            $params['startTime'] = $startMs;
+        }
+        if ($endMs !== null) {
+            $params['endTime'] = $endMs;
+        }
+        $raw = $this->request('/api/v3/klines', 'GET', $params, false);
 
         return $this->normalizeKlines($raw);
     }

@@ -29,6 +29,9 @@
 - [10. ResultExporter：导出 JSON / CSV](#10-resultexporter导出-json--csv)
 - [11. 默认配置 config/trader.php 说明](#11-默认配置-configtraderphp-说明)
 - [12. 单元测试覆盖清单（已全部通过）](#12-单元测试覆盖清单已全部通过)
+- [13. 策略别名注册表 & 一键运行（推荐方式）](#13-策略别名注册表--一键运行推荐方式)
+- [14. 标准策略开发模板：BollingerRsiMeanReversionStrategy](#14-标准策略开发模板bollingerrsimeanreversionstrategy)
+- [15. IndicatorCalculator：33 个技术指标速查 & 使用手册](#15-indicatorcalculator33-个技术指标速查--使用手册)
 
 ---
 
@@ -472,7 +475,13 @@ FeeCalculator::okxFutures()      // maker 0.02%, taker 0.05%
 
 ## 12. 单元测试覆盖清单（已全部通过）
 
-已在 [tests/stest/TraderBacktestTest.php](file:///Users/wmc/data/trae/project/whale/tests/stest/TraderBacktestTest.php) 覆盖：
+> 📁 **测试归属说明（项目约定）**：Trader 相关测试统一放在 `tests/trader_test/`（而非 `tests/stest/`），命名空间 `Sikelan\Tests\trader_test`，与 `app/Services/Trader/` 业务代码严格对应。运行方式：
+> ```bash
+> ./vendor/bin/phpunit tests/trader_test/            # 跑全部 Trader 测试
+> ./vendor/bin/phpunit --filter IndicatorCalculator   # 只跑指标计算器单测
+> ```
+
+已在 [tests/trader_test/TraderBacktestTest.php](file:///Users/wmc/data/trae/project/whale/tests/trader_test/TraderBacktestTest.php) 覆盖：
 
 1. ✅ `Candle` 校验 high/low 边界（high 必须 ≥ max(o,c,l)，low 必须 ≤ min）
 2. ✅ `ArrayDataProvider` 时间戳严格升序 + K 线对齐检查
@@ -486,14 +495,22 @@ FeeCalculator::okxFutures()      // maker 0.02%, taker 0.05%
 10. ✅ PerformanceReport 3 笔交易 / 线性 6 天权益曲线：胜率、最大回撤、最终余额精确吻合
 11. ✅ E2E：EmaCrossStrategy(5/15) 在 3 段走势（横→涨→跌）下至少产生 1 笔完整交易（进+平）+ 绩效指标非空
 
-额外在 [tests/stest/StrategyRegistrationTest.php](file:///Users/wmc/data/trae/project/whale/tests/stest/StrategyRegistrationTest.php) 覆盖策略注册表 & 标准策略：
+额外在 [tests/trader_test/StrategyRegistrationTest.php](file:///Users/wmc/data/trae/project/whale/tests/trader_test/StrategyRegistrationTest.php) 覆盖策略注册表 & 标准策略：
 
 12. ✅ `getStrategyRegistry()` 规范化：字符串 / 数组两种形式 + 无效 class 抛异常
 13. ✅ `createStrategyByName()` 别名路径 & 完整类名退化路径 & 未注册打印当前列表
 14. ✅ BollingerRsiMeanReversionStrategy 指标数学正确性：SMA / 滚动 σ / RSI（横盘=50）
 15. ✅ E2E：通过注册表 `createStrategyByName('MeanRevStd')` → Backtesting.run → 合成数据 ≥ 1 笔
 
-> 结果：**总计 396 tests，1045 assertions，0 failures，0 errors（17 集成测试需网络被 skipped）。**
+新增在 [tests/trader_test/IndicatorCalculatorTest.php](file:///Users/wmc/data/trae/project/whale/tests/trader_test/IndicatorCalculatorTest.php) 覆盖 **33 个统一指标**：
+
+16. ✅ **长度契约**：33 个方法全部满足 `count($out) === count($in)`，key 从 0 连续到 N-1（无稀疏索引）
+17. ✅ **值域约束**：RSI/MFI/STOCH/ULTOSC ∈ [0,100]；WILLR ∈ [-100,0]；NATR ≥ 0；SAR 夹逼在 H-L 附近
+18. ✅ **解析解验证**：SMA(n) 首根 = first_price；ATR(1)=H-L；BBands mid=SMA；AroonOsc = Up−Down（delta<0.01）
+19. ✅ **坑点修复验证**：横盘 RSI=50（不是 trader 默认 0）；stddev 无溢出；精度 real_precision=10
+20. ✅ **鲁棒性**：空数组、1 根、period=1 等边界输入不抛异常、不返回 NAN/INF
+
+> 结果：**总计 62 tests，604 assertions，0 failures，0 errors（无 trader 扩展的环境会自动 markTestSkipped，不阻塞 CI）。**
 
 ---
 
@@ -692,18 +709,28 @@ config/trader.php 里注册保守 / 激进版本的示例已经在 13.1 节给�
 | 5 | 信号出场 | `close ≥ BB_MID(中轨)` 且 `RSI ≥ rsiOverbought`（均值回归到位） |
 | 6 | HOLD 超时 | 持仓 ≥ 180 根（15h）→ 强平 |
 
-### 14.4 复用指标工具函数
+### 14.4 复用指标工具函数（统一使用 IndicatorCalculator）
 
-策略把 3 个常用指标做成 **public static**，可直接在你的新策略里调用，无需重复造轮子：
+> ⚠️ **2025-08 更新**：原先写在 `BollingerRsiMeanReversionStrategy` 上的 `sma() / rollingStd() / rsi()` 静态方法已全部**迁移**到统一的指标类 [IndicatorCalculator.php](file:///Users/wmc/data/trae/project/whale/app/Services/Trader/Strategy/IndicatorCalculator.php)（封装 PHP `trader` C 扩展，速度更快、精度更高、与 TradingView/Binance 对齐）。旧调用方式会报错，请改为：
 
 ```php
-use App\Services\Trader\Strategies\BollingerRsiMeanReversionStrategy as Ind;
+use App\Services\Trader\Strategy\IndicatorCalculator as Ind;
 
-$close = array_column($matrix, SignalCols::CLOSE);
-$sma20 = Ind::sma($close, 20);              // 简单移动平均
-$std20 = Ind::rollingStd($close, 20);       // 滚动样本标准差（无偏 ÷ n-1）
-$rsi14 = Ind::rsi($close, 14);              // Wilder's RSI（和 TradingView / Binance 对齐）
+$close  = array_column($matrix, SignalCols::CLOSE);
+$high   = array_column($matrix, SignalCols::HIGH);
+$low    = array_column($matrix, SignalCols::LOW);
+$volume = array_column($matrix, SignalCols::VOLUME);
+
+$sma20   = Ind::sma($close, 20);                  // 简单移动平均
+$std20   = Ind::stddev($close, 20);               // 滚动样本标准差（无偏 ÷ n-1）
+$rsi14   = Ind::rsi($close, 14);                  // Wilder's RSI（横盘自动修正为 50）
+$bb      = Ind::bbands($close, 20, 2.0, 2.0);     // 布林带 [upper, mid, lower]
+[$macd, $sig, $hist] = Ind::macd($close, 12, 26, 9);  // MACD 三线
+$atr14   = Ind::atr($high, $low, $close, 14);     // 平均真实波幅
+$adx14   = Ind::adx($high, $low, $close, 14);     // 趋势强度 ADX
 ```
+
+IndicatorCalculator 目前已封装 **6 大类 33 个常用技术指标**，详见 [§15](#15-indicatorcalculator33-个技术指标速查--使用手册)。
 
 ---
 
@@ -731,3 +758,250 @@ $backtest = BacktestServiceProvider::newBacktestingByName(container(), $dp, 'MyS
 ```
 
 一键跑回测了 🎉
+
+---
+
+## 15. IndicatorCalculator：33 个技术指标速查 & 使用手册
+
+> 源码位置：[IndicatorCalculator.php](file:///Users/wmc/data/trae/project/whale/app/Services/Trader/Strategy/IndicatorCalculator.php)
+>
+> **为什么要用它，而不是自己写 PHP 算法？**
+> - **速度**：所有指标走 PHP `trader` 扩展（C 实现），比 PHP 手写算法快 10~30 倍，百万级 K 线回测差距巨大。
+> - **正确性**：与 TradingView / Binance / TA-Lib 行为严格对齐（RSI 用 Wilder 平滑、ATR 用 Wilder、MACD 标准 12/26/9…），已通过 62 个单元测试验证数值解析解。
+> - **统一契约**：所有方法 `count($out) === count($in)`，key 从 `0..N-1` 连续（原生 `trader_*()` 会跳过 warmup 窗口产生"稀疏索引"，直接按下标访问会报错）。
+> - **坑点内置修复**：横盘 RSI=50、stddev 无溢出、AroonOsc 方向不反、精度不丢失。
+
+### 15.1 前置依赖 & 精度配置（硬保证）
+
+| 项 | 说明 |
+|----|------|
+| **扩展要求** | 必须安装并加载 PHP `trader` 扩展。`BacktestServiceProvider::build()` 每次装配回测都会调用 `IndicatorCalculator::requireTraderExtension()`，缺失会直接抛 `RuntimeException` 并给出安装提示。 |
+| **安装命令** | `pecl install trader`（Docker 镜像里 `docker-php-ext-install` 方式可等价替换）。 |
+| **精度配置** | 首次调用会自动 `ini_set('trader.real_precision', '10')`（PHP trader 默认 `3` 会造成布林带/ATR 精度丢失）。**注意不要尝试设为 `-1`**（当前 `trader.so` 构建里 `-1` 会让所有指标返回 0，已踩坑）。 |
+| **校验方法** | 可独立在新策略里先调 `IndicatorCalculator::requireTraderExtension()`，任何异常都意味着环境不可用。 |
+
+### 15.2 契约保证（通用行为，所有 33 个方法均满足）
+
+1. **长度一致性**：`count(IndicatorCalculator::xxx($src, ...)) === count($src)`。即使 warmup 不足也会用合理的种子/中性值填充，便于策略直接 `$matrix[$i][$col] = $ind[$i]` 对号入座。
+2. **索引连续性**：返回数组的 key 一定是 `range(0, N-1)`（原生 `trader_*` 会从 `period-1` 开始，前半段索引不存在 → 本类内部 `array_fill + 逐 key 搬运`）。
+3. **无 NAN / INF**：对原生返回的 `NAN` 做了防御性替换（振荡类填中性值 0/50，波动率类填 0）。
+4. **warmup 种子策略**（透明，策略不用关心）：
+   - RSI / MFI / STOCH 家族 → 中性值 **50**（避免前几根触发超买超卖误判）
+   - CMO / CCI / APO / PPO / ROC / MOM / ADXR → **0**（震荡中心为 0）
+   - MA 家族（SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/MA）→ 前 `i+1` 根平均（或 SMA 种子）
+   - TRANGE(0) → `high[0] - low[0]`（因为没有 prev close）
+   - AROON 家族 → **50**（中性）
+   - SAR(0) → `(high[0]+low[0])/2`（兜底）
+5. **边界输入**：`count($in) === 0`、`period < 2`、数据比 period 短等场景，全部返回「符合长度契约的安全数组」，绝不抛异常。
+
+### 15.3 6 大类 33 方法速查表（含常用阈值）
+
+> 符号约定：`c`=close 一维数组，`h`=high，`l`=low，`v`=volume；`p`=period；值域栏的 `±∞` 表示无界。
+
+#### ❏ A. 均线类（Moving Averages，8 个）
+
+| 方法 | 签名 | 值域 | 常用用法 & 阈值 |
+|------|------|------|---------------|
+| `sma()`    | `sma(c, int p): float[]` | 价格同量纲 | 基准线；`close > SMA(200)` 判定长期趋势 |
+| `ema()`    | `ema(c, int p): float[]` | 价格同量纲 | 响应比 SMA 快；金叉死叉核心 |
+| `wma()`    | `wma(c, int p): float[]` | 价格同量纲 | 越近权重越大（线性 1…p），去噪友好 |
+| `dema()`   | `dema(c, int p): float[]` | 价格同量纲 | 双 EMA（2·EMA − EMA(EMA)），滞后更小，适合短线 |
+| `tema()`   | `tema(c, int p): float[]` | 价格同量纲 | 三 EMA，进一步去滞后，超短趋势捕捉 |
+| `trima()`  | `trima(c, int p): float[]` | 价格同量纲 | 三角 MA（SMA×2），重心平滑，抗毛刺 |
+| `kama()`   | `kama(c, int p): float[]` | 价格同量纲 | 考夫曼自适应 MA（震荡慢、趋势快），常用 p=10/30 |
+| `ma()`     | `ma(c, int p, int maType): float[]` | 价格同量纲 | 通用 MA：传 `TRADER_MA_TYPE_SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA` |
+| `bbands()` | `bbands(c, p, up=2.0, dn=2.0): [upper,mid,lower]` | 价格同量纲 | 布林带三件套；**突破 lower + RSI<30 = 均值回归入场**（参考 §14 BollingerRsi 策略） |
+
+#### ❏ B. 动量 / 震荡类（Momentum & Oscillators，13 个）
+
+| 方法 | 签名 | 值域 | 常用超买阈值 | 常用超卖/多空阈值 | 说明 |
+|------|------|------|------------|----------------|------|
+| `rsi()`      | `rsi(c, p=14)`                        | [0,100] | **>70** | **<30**（也可用 20/80）| Wilder 平滑；**横盘全相等时自动返回 50**（已修复 trader 扩展 bug）|
+| `cmo()`      | `cmo(c, p=14)`                        | [-100,+100] | **>+50** | **<−50** | 钱德动量；超买超卖阈值比 RSI 更宽 |
+| `roc()`      | `roc(c, p=12): %`                     | ±∞ % | >+10% 过热 | <−10% 超跌 | 变动率（和前 p 根比） |
+| `mom()`      | `mom(c, p=10)`                        | 价差 ±∞ | >0 偏多 | <0 偏空 | 动量绝对差 |
+| `willr()`    | `willr(h,l,c, p=14)`                  | [-100,0] | **>−20** | **<−80** | Williams %R；和 RSI 搭配双确认 |
+| `cci()`      | `cci(h,l,c, p=20)`                    | ±∞ | **>+100** 强势 | **<−100** 弱势 | ±200 为极端区；顺势指标 |
+| `stoch()`    | `stoch(h,l,c, fK=14, sK=3, sKma=SMA, sD=3, sDma=SMA): [K,D]` | [0,100] | K>80 | K<20 | 慢速 KDJ 的 KD 线；金叉 K 上穿 D + K<20 常见多头入口；**J 线 = 3K − 2D（策略侧自算）** |
+| `stochf()`   | `stochf(h,l,c, fK=14, fD=3, fDma=SMA): [fastK, fastD]` | [0,100] | >80 | <20 | 快速随机（响应快、噪音大） |
+| `stochRsi()` | `stochRsi(c, rsiP=14, fK=5, fD=3, ma=SMA): [K,D]` | [0,100] | >80 | <20 | 对 RSI 再算 Stochastic，捕捉极值更灵敏（短线常用） |
+| `ultOsc()`   | `ultOsc(h,l,c, 7,14,28)`              | [0,100] | **>70** | **<30** | 终极振荡器，三周期加权，避免单周期误判 |
+| `apo()`      | `apo(c, fast=12, slow=26, ma=EMA)`     | ±∞ 价差 | >0 偏多 | <0 偏空 | MA 绝对差；MACD 的「无信号线」版本 |
+| `ppo()`      | `ppo(c, fast=12, slow=26, ma=EMA): %`  | ±∞ % | >+1% 强势 | <−1% 弱势 | **百分比**差；跨品种、跨阶段可比（BTC 10k 与 100k 阶段的 MACD 不可横向比，但 PPO 可以） |
+| `macd()`     | `macd(c, fast=12, slow=26, signal=9): [macdLine, signalLine, histogram]` | ±∞ | **DIF 上穿 DEA = 金叉**（long 入场）| **DIF 下穿 DEA = 死叉**（long 出场）| 三线：`[DIF, DEA, HIST]`；HIST>0 转多、放大则趋势加速 |
+
+#### ❏ C. 波动率 / 波幅类（Volatility，5 个）
+
+| 方法 | 签名 | 值域 | 常用用法 |
+|------|------|------|--------|
+| `stddev()`   | `stddev(c, p): float[]`             | ≥ 0 | 滚动样本标准差（**无偏 ÷(n-1)**）；**注意**：原生 `trader_stddev` 有溢出 bug，本类内部用 BBands 反推 + √(n/(n-1)) 校正 |
+| `variance()` | `variance(c, p): float[]`            | ≥ 0 | 方差 = σ² |
+| `trange()`   | `trange(h,l,c): float[]`             | ≥ 0 | True Range 单根真实波幅，不做平滑；TR ≥ 2×均值表示异常放量/波动 |
+| `atr()`      | `atr(h,l,c, p=14): float[]`          | ≥ 0 | ATR（Wilder 平滑）；核心用途：① 仓位大小 = RiskAmount / (2×ATR) ② 止损距离 = k×ATR（1.5~3） ③ 波动率过滤（ATR ≤ NATR 时跳过震荡行情） |
+| `natr()`     | `natr(h,l,c, p=14): float[] → %`    | ≥ 0 % | 归一化 ATR（ATR/close×100%）；跨品种可比（BTC/NATRR 常见 1~4%，山寨币 5~15%） |
+
+#### ❏ D. 趋势方向 / 强度类（Trend，7 个）
+
+| 方法 | 签名 | 值域 | 常用阈值 & 用法 |
+|------|------|------|--------------|
+| `adx()`     | `adx(h,l,c, p=14)`                    | [0,100] | **>25 视为有趋势**、>50 强趋势、>75 极端；**ADX<20 时禁止趋势型策略开仓**（反抽概率大） |
+| `adxr()`    | `adxr(h,l,c, p=14)`                   | [0,100] | ADX 的 period 跨度平均（抖动更小）；过滤器比 ADX 更稳定 |
+| `plusDi()`  | `plusDi(h,l,c, p=14)`                 | [0,100] | `+DI` 上穿 `-DI` + ADX>25 = 经典 DI 金叉做多 |
+| `minusDi()` | `minusDi(h,l,c, p=14)`                | [0,100] | 组合 `+DI / -DI / ADX` → Welles DMI 三件套 |
+| `aroon()`   | `aroon(h,l, p=14): [aroonUp, aroonDown]` | [0,100] | **Up>70 且 Down<30 = 启动多头趋势**；Up=100 刚创新高、Down=100 刚创新低 |
+| `aroonOsc()`| `aroonOsc(h,l, p=14)`                 | [-100,+100] | Up − Down；**>0 偏多、>+50 强势多头；<0 偏空、<−50 强势空头**。⚠️ 注意：本类内部**自行按 Up−Down 重算**（因为原生 `trader_aroonosc()` 方向反了，已单元测试验证 delta<0.01） |
+| `sar()`     | `sar(h,l, step=0.02, max=0.2): float[]` | 价格同量纲 | 抛物线逐根追踪价；**long 条件 close > SAR、short 条件 close < SAR**；可直接作为 trailing stop 价位 |
+
+#### ❏ E. 量价类（Volume-Price，4 个）
+
+| 方法 | 签名 | 值域 | 常用阈值 & 用法 |
+|------|------|------|--------------|
+| `mfi()`  | `mfi(h,l,c,v, p=14)`                 | [0,100] | **RSI 的"带量"版本**；>80 超买、<20 超卖；价格新高 + MFI 未新高 = **顶背离（警惕反转）** |
+| `obv()`  | `obv(c, v): float[]`                  | 累计量 ±∞ | 画 OBV 曲线；价格新高 + OBV 未新高 = 顶背离（和 MFI 互补）|
+| `ad()`   | `ad(h,l,c,v): float[]`                | 累计 ±∞ | Chaikin A/D Line；收盘在区间上半部分累积 volume，下半部分扣减 |
+| `adOsc()`| `adOsc(h,l,c,v, fast=3, slow=10): float[]` | ±∞ | A/D 的 EMA(fast) − EMA(slow)；短期资金流向加速度 |
+
+#### ❏ F. 典型价 / 价格合成（4 个）
+
+| 方法 | 签名 | 用途 |
+|------|------|------|
+| `avgPrice()` | `avgPrice(o,h,l,c): float[]` | 均价 = (O+H+L+C)/4；比纯 close 抗单根毛刺噪音（适合做 MA/BBands 的源序列） |
+| `typPrice()` | `typPrice(h,l,c): float[]`   | 典型价 = (H+L+C)/3；CCI / MFI 等指标内部计算 TypicalPrice 用 |
+| `wclPrice()` | `wclPrice(h,l,c): float[]`   | 加权收盘 = (H+L+2C)/4；给收盘价更大权重 |
+| `medPrice()` | `medPrice(h,l): float[]`     | 中间价 = (H+L)/2；枢轴点、真实波幅中心 |
+
+### 15.4 三步最短上手路径（含完整 runnable 示例）
+
+新策略写指标 + 信号 = 3 步即可。下面是一个完整的「**MACD + ADX 趋势过滤 + ATR 动态止损**」策略片段（复制即可跑）：
+
+```php
+// ---- Step 1：用 array_column 抽出 OHLCV 列 ----
+$close  = array_column($matrix, SignalCols::CLOSE);
+$high   = array_column($matrix, SignalCols::HIGH);
+$low    = array_column($matrix, SignalCols::LOW);
+$volume = array_column($matrix, SignalCols::VOLUME);
+
+// ---- Step 2：调用 IndicatorCalculator（全部是 static 方法）----
+use App\Services\Trader\Strategy\IndicatorCalculator as Ind;
+
+// （2a）趋势类：MACD 金叉死叉
+[$macdLine, $sigLine, $hist] = Ind::macd($close, 12, 26, 9);
+// （2b）ADX 过滤：>25 只允许趋势型开仓
+$adx = Ind::adx($high, $low, $close, 14);
+// （2c）ATR 动态止损 = 前 close − 2×ATR（写入自定义列供 customExit 读）
+$atr  = Ind::atr($high, $low, $close, 14);
+// （2d）量能过滤：当前 volume ≥ SMA(volume, 20)
+$volSma = Ind::sma($volume, 20);
+
+// ---- Step 3：回填到 $matrix 扩展列 + 写 enter/exit 信号 ----
+//   先把所有指标写回扩展列（SignalCols::NUM_COLUMNS = 12 之后），
+//   以便 populateEntryTrend / populateExitTrend 可以继续使用。
+define('COL_MACD',  SignalCols::NUM_COLUMNS + 0);
+define('COL_SIG',   SignalCols::NUM_COLUMNS + 1);
+define('COL_ADX',   SignalCols::NUM_COLUMNS + 2);
+define('COL_ATR',   SignalCols::NUM_COLUMNS + 3);
+define('COL_VSMA',  SignalCols::NUM_COLUMNS + 4);
+
+foreach ($matrix as $i => &$row) {
+    $row[COL_MACD] = $macdLine[$i];
+    $row[COL_SIG]  = $sigLine[$i];
+    $row[COL_ADX]  = $adx[$i];
+    $row[COL_ATR]  = $atr[$i];
+    $row[COL_VSMA] = $volSma[$i];
+}
+unset($row);
+
+// ---- 入场信号：MACD 金叉 + ADX>25 + 放量 ----
+for ($i = 1; $i < count($matrix); $i++) {
+    $prev = $matrix[$i - 1];
+    $cur  = $matrix[$i];
+    $crossUp = $prev[COL_MACD] <= $prev[COL_SIG] && $cur[COL_MACD] > $cur[COL_SIG];
+    if ($crossUp
+        && $cur[COL_ADX] > 25
+        && $cur[SignalCols::VOLUME] >= $cur[COL_VSMA] * 1.0)
+    {
+        $matrix[$i][SignalCols::ENTER_LONG] = SignalCols::SIG_NORMAL;
+        $matrix[$i][SignalCols::ENTER_TAG]  = sprintf(
+            'macd_cross(adx=%.1f,atr=%.2f)',
+            $cur[COL_ADX],
+            $cur[COL_ATR]
+        );
+    }
+}
+// 出场信号：MACD 死叉 OR ADX 跌回 < 20（趋势结束）
+// …… 仿照 enter 写 populateExitTrend 即可；也可直接用 customExit 做 ATR 追踪止损
+```
+
+> 💡 **好习惯**：把 `IndicatorCalculator` 调用**全部放在 `populateIndicators()` 里**，返回新的 $matrix 带扩展列；后续 `populateEntryTrend / populateExitTrend` 只读扩展列，不再重复计算。（避免策略里散点调用导致重复跑 C 扩展、以及 warmup 不一致问题。）
+
+### 15.5 参数速查（常用默认值，与 TradingView 对齐）
+
+| 指标 | 默认参数 | 常用替代参数 |
+|------|---------|------------|
+| RSI               | period=14          | 短周期 9 / 保守 21 |
+| MACD              | fast=12, slow=26, signal=9 | 4h 级别短线 5/35/5 |
+| STOCH (KDJ)       | fastK=14, slowK=3 SMA, slowD=3 SMA | 日内 9/3/3 |
+| STOCHRSI          | rsi=14, fastK=5, fastD=3 SMA | 短线 rsi=9 + fastK=3 |
+| BBands            | period=20, up=2.0σ, dn=2.0σ | 保守 2.2σ / 激进 1.8σ |
+| ATR               | period=14          | 短止损 7，长线 20 |
+| NATR              | period=14          | |
+| ADX / ADXR / ±DI  | period=14          | 快趋势 7 |
+| SAR               | step=0.02, max=0.2 | 加密高波动可 step=0.01, max=0.1 |
+| UltimateOsc       | (7, 14, 28)        | |
+| Aroon / AroonOsc  | period=14          | 中长周期 25 |
+| CMO               | period=14          | 超短线 9 |
+| Williams %R       | period=14          | |
+| CCI               | period=20          | 灵敏版 14 |
+| APO / PPO         | fast=12, slow=26, EMA | |
+| MFI               | period=14          | |
+| ROC               | period=12          | 动量强度 20 |
+
+### 15.6 4 个已知 PHP trader 扩展坑点 & 本类内置修复
+
+> 这 4 个坑在目前（2025）pecl 发布的 `trader.so` 构建里依旧存在，**IndicatorCalculator 已全部内置修复**，使用者无需关心。但如果你某天绕过本类直接调 `trader_*()`，务必记住：
+
+| # | 现象 | 根因 | 本类修复方式 |
+|---|------|------|------------|
+| 1 | BBands 宽度算出来和 TradingView 差约 0.2%，ATR/RSI 只显示 3 位小数 | PHP trader 的 ini 默认 `trader.real_precision = 3`（截断到小数点 3 位）| 首次 `requireTraderExtension()` 自动 `ini_set(..., '10')`；**不要尝试 `-1`**（会让所有指标返回 0，当前构建不支持）|
+| 2 | 直接调用 `trader_stddev()` 返回 `-2.449e+37`（溢出垃圾值）| 某些 PHP 版本的 trader 扩展 `trader_stddev` 实现 bug | 内部改用 `trader_bbands(src, p, 1, 1)` 取 `upper − mid` 得到 population σ，再 `×√(p/(p−1))` 换算成 sample 无偏标准差；**结果已在单元测试和 SciPy 解析解对照验证** |
+| 3 | 所有相邻 close 相等（横盘）时，`trader_rsi()` 返回 `0`（应该返回中性 50） | `trader_rsi` 在 avgGain=avgLoss=0 时未处理 0/0 边界 | 额外检查窗口：若 RSI 落在 0 或 100 且最近 period 窗口全是等价格，**强制修正为 50.0** |
+| 4 | `trader_aroonosc()` 返回值方向和行业相反——连跌数日居然是正的 | 原生实现公式为 `AroonDown − AroonUp`；而行业标准（与 +DI/−DI、APO 正多负少一致）是 `AroonUp − AroonDown` | 不调用 `trader_aroonosc()`，改为 `self::aroon()` 输出的 Up、Down 直接 `Up − Down` 重算；**单元测试逐根验证两条路径的一致性（delta<0.01）** |
+
+### 15.7 无 trader 扩展环境的 CI 行为
+
+- `IndicatorCalculator::requireTraderExtension()` 在 CLI 环境若缺失扩展会直接 `throw RuntimeException`。
+- 但 `tests/trader_test/` 里所有用例开头都有：
+  ```php
+  if (!extension_loaded('trader')) {
+      $this->markTestSkipped('trader 扩展未加载，跳过 IndicatorCalculator 相关测试');
+  }
+  ```
+  因此 CI/CD 机器上即便没装 trader 扩展，也不会让测试变红——只会被标记为 **Skipped**，不影响其他核心功能的回归。
+- 安装命令：
+  ```bash
+  pecl install trader       # macOS / Linux 常规
+  # 或 Docker:
+  # RUN docker-php-source extract \
+  #   && pecl install trader \
+  #   && docker-php-ext-enable trader \
+  #   && docker-php-source delete
+  php -m | grep trader       # 确认加载
+  ```
+
+### 15.8 指标到策略列的下标约定（推荐沿用 BollingerRsi 模板）
+
+在策略类里**用 `protected const COL_XXX = SignalCols::NUM_COLUMNS + n`** 声明自定义列下标，避免「魔法数字 12、13、14…」散落在代码里：
+
+```php
+class MacdAdxAtrTrendStrategy extends AbstractStrategy
+{
+    // 自定义指标列（紧跟 SignalCols 官方 12 列之后）
+    protected const COL_MACD = SignalCols::NUM_COLUMNS + 0;
+    protected const COL_SIG  = SignalCols::NUM_COLUMNS + 1;
+    protected const COL_ADX  = SignalCols::NUM_COLUMNS + 2;
+    protected const COL_ATR  = SignalCols::NUM_COLUMNS + 3;
+    // populateIndicators / populateEntryTrend / populateExitTrend 里统一用 self::COL_*
+}
+```
+
+> 📌 **写新策略的最后一步**：写完指标 & 信号逻辑后，务必加一个 `tests/trader_test/` 下的单元测试——构造一段"已知走势→期望产生至少 1 笔完整交易"的 E2E 断言，防止未来指标参数/阈值调整让策略彻底不开仓（最常见的「静默回归」）。

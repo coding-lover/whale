@@ -17,11 +17,14 @@ class IndexController
         $Manager = container()->get(ExchangeManager::class);
         $realSymbol = $Manager->exchange('binance')->formatSymbol('BTC/USDT:quarter');
 
+        $val = 9 * 1_000_000;
+
         return (new Response())->withJson([
             'message' => 'Welcome to QuantTrade',
             'method' => $request->getMethod(),
             'uri' => $request->getUri()->getPath(),
-            'test' => $realSymbol
+            'test' => $realSymbol,
+            'val' => $val
         ]);
     }
 

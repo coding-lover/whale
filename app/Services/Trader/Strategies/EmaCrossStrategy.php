@@ -5,6 +5,7 @@ namespace App\Services\Trader\Strategies;
 use App\Services\Exchanges\TradingSymbol;
 use App\Services\Trader\Model\TradeRecord;
 use App\Services\Trader\Strategy\AbstractStrategy;
+use App\Services\Trader\Strategy\IndicatorCalculator;
 use App\Services\Trader\Strategy\SignalCols;
 
 /**
@@ -76,9 +77,9 @@ class EmaCrossStrategy extends AbstractStrategy
         for ($i = 0; $i < $n; $i++) {
             $closeArr[] = (float) $matrix[$i][SignalCols::CLOSE];
         }
-        // 2) 计算 EMA short/long
-        $emaShort = self::ema($closeArr, $this->emaShortPeriod);
-        $emaLong  = self::ema($closeArr, $this->emaLongPeriod);
+        // 2) 计算 EMA short/long（统一由 PHP trader 扩展提供）
+        $emaShort = IndicatorCalculator::ema($closeArr, $this->emaShortPeriod);
+        $emaLong  = IndicatorCalculator::ema($closeArr, $this->emaLongPeriod);
         // 3) 写回矩阵扩展列
         for ($i = 0; $i < $n; $i++) {
             $matrix[$i][self::COL_EMA_SHORT] = $emaShort[$i];
@@ -121,44 +122,6 @@ class EmaCrossStrategy extends AbstractStrategy
             }
         }
         return $matrix;
-    }
-
-    // --------------------------
-    //  Helpers: EMA（Wilder alpha = 2/(period+1)，标准）
-    // --------------------------
-
-    /**
-     * 计算 EMA，长度和输入保持一致
-     *   - 前 period-1 根保持前 period 的 SMA 作为种子（与 ta-lib / TradingView 行为最接近，避免 jump）
-     *   - 之后用 EMA 递推
-     *
-     * @param float[] $src
-     * @return float[]
-     */
-    public static function ema(array $src, int $period): array
-    {
-        $n = count($src);
-        $out = array_fill(0, $n, 0.0);
-        if ($n === 0 || $period <= 0) {
-            return $out;
-        }
-        $k = 2 / ($period + 1);
-        // 种子 SMA
-        $seed = 0.0;
-        $seedLen = min($period, $n);
-        for ($i = 0; $i < $seedLen; $i++) {
-            $seed += $src[$i];
-        }
-        $seed /= $seedLen;
-        $ema = $seed;
-        for ($i = 0; $i < $seedLen; $i++) {
-            $out[$i] = $ema;
-        }
-        for ($i = $seedLen; $i < $n; $i++) {
-            $ema = $src[$i] * $k + $ema * (1 - $k);
-            $out[$i] = $ema;
-        }
-        return $out;
     }
 
     // customExit 等钩子不用覆写（AbstractStrategy 提供默认 no-op）

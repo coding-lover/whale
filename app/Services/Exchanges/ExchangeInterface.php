@@ -36,12 +36,24 @@ interface ExchangeInterface
     /**
      * 获取K线数据
      *
-     * @param string $symbol 交易对
-     * @param string $interval 周期，如 1m, 5m, 15m, 1h, 4h, 1d
-     * @param int $limit 数量（默认 100，最大 1000）
+     * ⭐ 关于分页：交易所 REST 限制单次 limit 最大 1000（Binance/OKX 均此量级）。
+     * 若要拉超过 1000 根历史数据，必须使用 `$startMs / $endMs` 两个时间窗口参数并循环。
+     * 不传 → 默认取最近 limit 根；这也是之前「跨 15 次分页全部重叠到最新 1000 根」的原因。
+     *
+     * @param string   $symbol    交易对
+     * @param string   $interval  周期，如 1m, 5m, 15m, 1h, 4h, 1d
+     * @param int      $limit     数量（默认 100，最大 1000）
+     * @param int|null $startMs   起始时间（毫秒，含）；null 表示不限制
+     * @param int|null $endMs     结束时间（毫秒，含）；null 表示不限制
      * @return array 统一格式：[[timestamp, open, high, low, close, volume], ...]
      */
-    public function getKlines(string $symbol, string $interval, int $limit = 100): array;
+    public function getKlines(
+        string $symbol,
+        string $interval,
+        int $limit = 100,
+        ?int $startMs = null,
+        ?int $endMs = null
+    ): array;
 
     /**
      * 获取最近成交记录

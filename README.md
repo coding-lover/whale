@@ -1823,7 +1823,7 @@ $host = env('DB_HOST');
 | `BASE_PATH` | 项目根目录 | `/path/to/whale` |
 | `APP_PATH` | 应用代码目录 | `BASE_PATH/app` |
 | `CONFIG_PATH` | 配置文件目录 | `BASE_PATH/config` |
-| `RUNTIME_PATH` | 运行时文件目录 | `BASE_PATH/runtime` |
+| `RUNTIME_PATH` | 运行时静态数据 + 临时产物目录（PID、缓存、回测导出等）。详见 `.trae/rules/global-style.md §12` | `APP_PATH/runtime`（即 `BASE_PATH/app/runtime`） |
 | `LOG_PATH` | 日志文件目录 | `BASE_PATH/logs` |
 | `FRAMEWORK_PATH` | 框架核心目录 | `BASE_PATH/sikelan` |
 | `VENDOR_PATH` | 第三方依赖目录 | `BASE_PATH/vendor` |

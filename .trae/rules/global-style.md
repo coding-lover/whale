@@ -86,7 +86,12 @@ composer test:stest     # 仅系统单元
 ```
 project/
 ├── app/Controllers · Services · Tasks · Models · Middleware   # 业务
-├── bin/ bootstrap/ config/ logs/ runtime/                     # 启动/配置
+│   └── runtime/                                                # ⭐ 运行时静态数据 + 临时产物（新约定 §12）
+│       ├── static/        ← 进仓库：业务运行必需的静态数据（白名单 JSON、pair 映射、种子 CSV 等）
+│       ├── cache/         ← 不进仓库：配置/路由/类映射缓存（启动时自动重建）
+│       ├── trader/data/   ← 可进仓库：回测种子 OHLCV（小体积可共享；大数据集走对象存储）
+│       └── trader/output/ ← 不进仓库：回测 JSON/CSV 导出（每次运行重新生成）
+├── bin/ bootstrap/ config/ logs/ runtime/                     # 启动/配置；项目根 runtime/ 已废弃（保留兼容）
 ├── sikelan/Core · Http · Database · Cache · Task · Crontab · Process · Server  # 框架核心
 └── tests/stest · atest · trader_test                          # 测试（按归属：stest=sikelan框架 / atest=app应用 / trader_test=App\Services\Trader+Exchanges）
 ```
@@ -229,6 +234,44 @@ protected array $config = [];
 feat(trader): 策略别名注册表 + createStrategyByName
 - 支持字符串 & class+construct 两种注册形式
 - 未注册时异常打印当前已注册别名列表
+```
+---
+
+## 12. 运行时静态数据目录约定（`app/runtime/`）
+
+> **动机**：之前运行时数据和临时产物分散在项目根 `runtime/`、`logs/` 外各处，CI/部署时容易把「静态种子数据」和「运行时产物」一起 .gitignore 掉，导致拉代码后缺数据、业务一启动就 fatal。现统一收归到 `app/runtime/`，并明确「什么进 Git 仓库，什么忽略」。
+
+### 12.1 位置 & 常量映射
+
+| 项 | 值 |
+|----|---|
+| 目录 | `app/runtime/`（物理路径）|
+| PHP 常量 | `RUNTIME_PATH = APP_PATH . '/runtime'`（`sikelan/Core/constants.php`）|
+| 自动创建 | 框架启动时 `constants.php` 会 `mkdir(RUNTIME_PATH, 0755, true)`，不存在不会 fatal |
+| 旧位置 | 项目根 `BASE_PATH/runtime/` 标记为**废弃**；短期保留作兼容兜底，新代码必须写 `RUNTIME_PATH` |
+
+### 12.2 子目录划分 & 进仓策略
+
+| 子目录 | 作用 | 必须进 Git？ | 配置默认值来源（示例）|
+|--------|------|-----------|-------------------|
+| `app/runtime/static/` | 运行时**依赖**的静态数据：报价货币白名单、symbol 映射 JSON、节假日日历、少量种子 OHLCV 样本 CSV 等。**缺了业务代码会异常**。 | ✅ **必须进** | 自行按模块命名子目录 `static/quote/quote_whitelist.json` |
+| `app/runtime/trader/data/` | Trader 回测用种子 OHLCV CSV / 离线行情 pickle。小体积（单文件<5MB）可直接进仓便于团队共享 demo；大 dataset 走对象存储 / NAS。 | 🟡 **可进（小体积）**；大体积放外链并在 README 说明下载方式 | `config/trader.php → data_dir = RUNTIME_PATH . '/trader/data'` |
+| `app/runtime/trader/output/` | ResultExporter 导出的 JSON / CSV（每次回测重新生成，用作临时持久化）。 | ❌ **绝对不进**（`app/runtime/.gitignore` 已忽略）| `config/trader.php → output_dir = RUNTIME_PATH . '/trader/output'` |
+| `app/runtime/cache/` | Config 编译缓存、路由缓存、类映射、Swoole 临时文件。**启动时不存在会自动重建**。 | ❌ 不进 | `ConfigCommand` 默认 `RUNTIME_PATH . '/cache/config.php'` |
+| `app/runtime/*.pid` | Swoole 服务 PID 文件（dev/prod 分别 `server_dev.pid` / `server.pid`）。 | ❌ 不进 | `config/dev|prod/server.php → pid_file = RUNTIME_PATH . '/xxx.pid'` |
+| 其他 `*.log` | 日志**仍在项目根 `logs/`**（`LOG_PATH` 不变，保持和其他服务通道一致）。 | ❌ 不进 | `LOG_PATH = BASE_PATH . '/logs'`（未变）|
+
+> ⚠️ **反模式（强不推荐，PR 会 WARN）**
+> - 在 `config/*.php` 里硬编码字符串路径 `/runtime/xxx` → **必须**使用 `RUNTIME_PATH` 常量（或 `env()` 覆盖）。
+> - 把「回测 JSON 导出」写进 `static/` 或 `trader/data/`（目录职责错配）。
+> - > 5MB 的 CSV / dataset 直接 push 到仓库 → 改放对象存储 / NAS，并在对应模块的 README 写下载脚本。
+
+### 12.3 新增运行时静态数据的标准步骤（3 步）
+
+1. **选址**：判断是「依赖的输入数据」还是「运行时输出」。前者放 `static/` 或 `trader/data/`，后者放 `cache/` 或 `trader/output/`。
+2. **加 .gitkeep / .gitignore 负向规则**：空目录放 `.gitkeep` 保证结构被追踪；大体积 `.csv/.bin` 若要进仓需在 `app/runtime/.gitignore` 加「负向规则」如 `!trader/data/btc_5m_sample.csv`。
+3. **在代码里引用常量**：`file_get_contents(RUNTIME_PATH . '/static/quote/whitelist.json');`——绝对**不要**写 `BASE_PATH . '/runtime'`（硬编码）或相对路径 `'../../runtime'`（CLI/CWD 不一致会找错）。
+
 ---
 
 ## 代码审查 Checklist（PR 自检）

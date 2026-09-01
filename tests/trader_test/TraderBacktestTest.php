@@ -223,6 +223,9 @@ class TraderBacktestTest extends TestCase
 
     public function testE2eEmaCrossProducesTradesAndMetrics(): void
     {
+        if (!extension_loaded('trader')) {
+            $this->markTestSkipped('缺少 trader 扩展，跳过 Backtesting E2E 测试。');
+        }
         $dp = new ArrayDataProvider();
         $symbol = TradingSymbol::parse('BTC/USDT');
 

@@ -5,6 +5,7 @@ namespace Sikelan;
 use Sikelan\Core\Container;
 use Sikelan\Core\Config;
 use Sikelan\Core\Logger;
+use Sikelan\Core\Bootstrap;
 use Sikelan\Server\Server;
 use Sikelan\Http\Router;
 use Sikelan\Http\RequestHandler;
@@ -131,17 +132,14 @@ class Framework
     }
 
     /**
-     * 加载常量和公共函数
+     * 加载常量和公共函数（统一委托给 Bootstrap，避免多入口重复 require）。
      */
     protected function loadConstants(): void
     {
-        require __DIR__ . '/Core/constants.php';
-        require __DIR__ . '/Core/common.php';
-        // 加载应用层公共函数（如 app()、exchange()、cache() 等快捷函数）
-        $appCommonFile = APP_PATH . '/common.php';
-        if (file_exists($appCommonFile)) {
-            require $appCommonFile;
-        }
+        // BASE_PATH 此时一定已定义（constants.php 里 dirname(__DIR__,2)）；
+        // 如果还没定义（比如入口跳过了 Bootstrap.cli()），就用我们自己所在位置推导（即 BASE_PATH）
+        $basePath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__);
+        Bootstrap::core($basePath);
     }
 
     /**

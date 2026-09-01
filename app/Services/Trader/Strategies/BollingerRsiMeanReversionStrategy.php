@@ -5,6 +5,7 @@ namespace App\Services\Trader\Strategies;
 use App\Services\Exchanges\TradingSymbol;
 use App\Services\Trader\Model\TradeRecord;
 use App\Services\Trader\Strategy\AbstractStrategy;
+use App\Services\Trader\Strategy\IndicatorCalculator;
 use App\Services\Trader\Strategy\SignalCols;
 
 /**
@@ -163,21 +164,20 @@ class BollingerRsiMeanReversionStrategy extends AbstractStrategy
             $volArr[]   = (float) $matrix[$i][SignalCols::VOLUME];
         }
 
-        // 2) SMA20 + 滚动 20 标准差 -> 布林带
-        $sma20 = self::sma($closeArr, $this->bbPeriod);
-        $std20 = self::rollingStd($closeArr, $this->bbPeriod);
-        $bbUpper = [];
-        $bbLower = [];
-        for ($i = 0; $i < $n; $i++) {
-            $bbUpper[$i] = $sma20[$i] + $std20[$i] * $this->bbStdMult;
-            $bbLower[$i] = $sma20[$i] - $std20[$i] * $this->bbStdMult;
-        }
+        // 2) 布林带（直接调用 trader 扩展的 bbands，返回 [upper, mid, lower]）
+        //    注意：这里 mid = SMA(bbPeriod)，正好对应策略里的 COL_SMA20 语义
+        [$bbUpper, $sma20, $bbLower] = IndicatorCalculator::bbands(
+            $closeArr,
+            $this->bbPeriod,
+            $this->bbStdMult,
+            $this->bbStdMult
+        );
 
-        // 3) RSI 14
-        $rsi14 = self::rsi($closeArr, $this->rsiPeriod);
+        // 3) RSI（PHP trader 扩展，Wilder's smoothing）
+        $rsi14 = IndicatorCalculator::rsi($closeArr, $this->rsiPeriod);
 
         // 4) 成交量 SMA 20
-        $volSma20 = self::sma($volArr, 20);
+        $volSma20 = IndicatorCalculator::sma($volArr, 20);
 
         // 5) 回填到矩阵扩展列
         for ($i = 0; $i < $n; $i++) {
@@ -275,124 +275,6 @@ class BollingerRsiMeanReversionStrategy extends AbstractStrategy
     ): ?float {
         // 例子：限价 BUY 挂到前一根 LOW × 0.999（更稳一点）
         return (float) $previousRow[SignalCols::LOW] * 0.999;
-    }
-
-    // ==============================================================
-    //  指标工具（静态方法，可作为其他策略模板复用）
-    // ==============================================================
-
-    /**
-     * 简单移动平均 SMA。
-     * 前 period-1 根用当前已有的 i+1 根平均作为种子，长度对齐。
-     *
-     * @param float[] $src
-     * @return float[]
-     */
-    public static function sma(array $src, int $period): array
-    {
-        $n = count($src);
-        $out = array_fill(0, $n, 0.0);
-        if ($n === 0 || $period <= 0) {
-            return $out;
-        }
-        $sum = 0.0;
-        for ($i = 0; $i < $n; $i++) {
-            $sum += $src[$i];
-            if ($i >= $period) {
-                $sum -= $src[$i - $period];
-            }
-            $div = min($i + 1, $period);
-            $out[$i] = $sum / $div;
-        }
-        return $out;
-    }
-
-    /**
-     * 滚动标准差（σ）。前 period-1 根按当前 i+1 根算。
-     *
-     * @param float[] $src
-     * @return float[]
-     */
-    public static function rollingStd(array $src, int $period): array
-    {
-        $n = count($src);
-        $out = array_fill(0, $n, 0.0);
-        if ($n === 0 || $period <= 1) {
-            return $out;
-        }
-        $window = [];
-        foreach ($src as $i => $v) {
-            $window[] = $v;
-            if (count($window) > $period) {
-                array_shift($window);
-            }
-            $m = count($window);
-            if ($m < 2) {
-                $out[$i] = 0.0;
-                continue;
-            }
-            $mean = array_sum($window) / $m;
-            $var = 0.0;
-            foreach ($window as $x) {
-                $var += ($x - $mean) ** 2;
-            }
-            $var /= ($m - 1); // 样本无偏
-            $out[$i] = sqrt($var);
-        }
-        return $out;
-    }
-
-    /**
-     * RSI：Wilder's smoothing（TradingView / talib 默认，和 Binance/OKX 一致）。
-     *  period = 14 时，前 13 根返回 50.0 作为种子（中性值）。
-     *
-     * @param float[] $src
-     * @return float[] 0..100
-     */
-    public static function rsi(array $src, int $period): array
-    {
-        $n = count($src);
-        $out = array_fill(0, $n, 50.0);
-        if ($n <= $period || $period < 1) {
-            return $out;
-        }
-        // 第一步：首 period 根的平均 gain / loss
-        $gainSum = 0.0;
-        $lossSum = 0.0;
-        for ($i = 1; $i <= $period; $i++) {
-            $delta = $src[$i] - $src[$i - 1];
-            if ($delta >= 0) {
-                $gainSum += $delta;
-            } else {
-                $lossSum += -$delta;
-            }
-        }
-        $avgGain = $gainSum / $period;
-        $avgLoss = $lossSum / $period;
-        for ($i = 0; $i < $period; $i++) {
-            $out[$i] = 50.0;
-        }
-        // Wilder smoothing：period..n
-        for ($i = $period; $i < $n; $i++) {
-            $delta = $src[$i] - $src[$i - 1];
-            $g = $delta >= 0 ? $delta : 0.0;
-            $l = $delta < 0  ? -$delta : 0.0;
-            $avgGain = ($avgGain * ($period - 1) + $g) / $period;
-            $avgLoss = ($avgLoss * ($period - 1) + $l) / $period;
-            // 横盘特殊处理：gain & loss 都几乎为 0 → RSI = 50（中性），避免除 0 跳到 100
-            if ($avgGain < 1e-12 && $avgLoss < 1e-12) {
-                $rsi = 50.0;
-            } elseif ($avgLoss < 1e-12) {
-                $rsi = 100.0;
-            } elseif ($avgGain < 1e-12) {
-                $rsi = 0.0;
-            } else {
-                $rs = $avgGain / $avgLoss;
-                $rsi = 100.0 - 100.0 / (1 + $rs);
-            }
-            $out[$i] = $rsi;
-        }
-        return $out;
     }
 
     // ----- 读访问器（调试用，或报表输出指标列）-----

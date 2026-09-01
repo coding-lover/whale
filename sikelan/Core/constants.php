@@ -6,7 +6,9 @@ defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
 defined('CONFIG_PATH') || define('CONFIG_PATH', BASE_PATH . '/config');
 
-defined('RUNTIME_PATH') || define('RUNTIME_PATH', BASE_PATH . '/runtime');
+// 运行时目录：运行时依赖的静态数据 + 临时产物（PID、缓存、回测导出等）统一放入 app/runtime/。
+// 项目约定详见 .trae/rules/global-style.md §12「运行时静态数据目录约定」。
+defined('RUNTIME_PATH') || define('RUNTIME_PATH', APP_PATH . '/runtime');
 
 defined('LOG_PATH') || define('LOG_PATH', BASE_PATH . '/logs');
 

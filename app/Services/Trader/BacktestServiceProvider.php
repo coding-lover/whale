@@ -9,6 +9,7 @@ use App\Services\Trader\Market\ArrayDataProvider;
 use App\Services\Trader\Market\DataProviderInterface;
 use App\Services\Trader\Model\Wallet;
 use App\Services\Trader\Protection\ProtectionManager;
+use App\Services\Trader\Strategy\IndicatorCalculator;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sikelan\Core\Config;
@@ -74,6 +75,10 @@ class BacktestServiceProvider
         Strategy\StrategyInterface $strategy,
         ?LoggerInterface $logger
     ): Backtesting {
+        // ---- 硬依赖检查：所有策略指标统一使用 PHP trader 扩展计算 ----
+        // 未安装请执行: pecl install trader
+        IndicatorCalculator::requireTraderExtension();
+
         $stake = (string) ($traderCfg['stake_currency'] ?? 'USDT');
 
         // Wallet：初始化 stake currency 初始资金（一般是 USDT），其他币种 0
