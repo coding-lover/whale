@@ -300,6 +300,12 @@ return [
         'path' => '/api/task/async',
         'handler' => 'App\Controllers\TaskController@testAsyncExceptionTask',
     ],
+    [
+        'method' => 'GET',
+        'path' => '/api/task/backtest',
+        'handler' => 'App\Controllers\TaskController@testBackTestTask',
+    ],
+
 
     // 交易所接口
     [

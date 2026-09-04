@@ -1,0 +1,88 @@
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:05:52] [56513] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:46] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:06:47] [56653] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:08:35] [56911] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:37] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:41:38] [57973] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:46:38] [58039] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:46:38] [58039] [info] Starting Sikelan framework in http mode
+[2026-09-04 09:46:38] [58039] [info] AppHook: onInitialize called
+[2026-09-04 09:46:38] [58039] [info] AppHook: onServerStart called
+[2026-09-04 09:46:38] [58039] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-04 09:46:44] [58043] [info] BackTestTask started {"args":"{\"should_throw\":true,\"message\":\"Async exception demo\"}"}
+[2026-09-04 09:48:08] [58133] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:48:08] [58133] [info] Starting Sikelan framework in http mode
+[2026-09-04 09:48:08] [58133] [info] AppHook: onInitialize called
+[2026-09-04 09:48:08] [58133] [info] AppHook: onServerStart called
+[2026-09-04 09:48:08] [58133] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-04 09:48:11] [58137] [info] BackTestTask started {"args":"{\"should_throw\":true,\"message\":\"Async exception demo\"}"}
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 09:57:44] [58597] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 10:02:07] [59205] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 10:02:07] [59205] [info] Starting Sikelan framework in http mode
+[2026-09-04 10:02:07] [59205] [info] AppHook: onInitialize called
+[2026-09-04 10:02:07] [59205] [info] AppHook: onServerStart called
+[2026-09-04 10:02:07] [59205] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-04 10:02:11] [59211] [info] BackTestTask started {"args":"{\"should_throw\":true,\"message\":\"Async exception demo\"}"}
+[2026-09-04 10:03:24] [59211] [info] ExceptionDemoTask started {"should_throw":true,"message":"This task will intentionally throw an exception"}
+[2026-09-04 10:03:24] [59211] [warning] ExceptionDemoTask will throw an exception {"message":"This task will intentionally throw an exception"}
+[2026-09-04 10:03:24] [59211] [error] Task execution error: Intentional exception: This task will intentionally throw an exception {"task_id":1,"data":"{\"class\":\"App\\\\Tasks\\\\ExceptionDemoTask\",\"args\":{\"should_throw\":true,\"message\":\"This task will intentionally throw an exception\"}}","trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Task\/TaskManager.php(166): App\\Tasks\\ExceptionDemoTask->handle(Array)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Task\/TaskManager.php(126): Sikelan\\Task\\TaskManager->executeTask(1, '{\"class\":\"App\\\\\\\\...')\n#2 [internal function]: Sikelan\\Task\\TaskManager->onTask(Object(Swoole\\Http\\Server), Object(Swoole\\Server\\Task))\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(313): call_user_func(Array, Object(Swoole\\Http\\Server), Object(Swoole\\Server\\Task))\n#4 {main}"}
+[2026-09-04 10:04:38] [59581] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-04 10:05:02] [59644] [info] Hook loaded: App\Hooks\AppHook

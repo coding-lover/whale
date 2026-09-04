@@ -173,6 +173,51 @@ class TraderDownloadKlinesCommand implements CommandInterface
             );
     }
 
+    // ------------------------------------------------------------------------
+    //  静态便捷入口（给 BacktestServiceProvider / 其他 Service 内部调的）
+    // ------------------------------------------------------------------------
+
+    /**
+     * 内部调：数组参数 → 下载 K 线（不走 CLI argv 解析，直接构造完整 argv 注入 CommandManager）。
+     *
+     *   TraderDownloadKlinesCommand::download([
+     *       'exchange' => 'binance',
+     *       'symbol'   => 'BTC/USDT',
+     *       'interval' => '1h',
+     *       'days'     => 7,
+     *       // 'from'  => '2024-01-01',   // 和 days 二选一
+     *       // 'to'    => '2024-06-30',
+     *   ]);
+     *
+     * @param array<string, mixed> $options
+     * @return string 命令输出（成功时带 ✅ 和路径）
+     * @throws \RuntimeException 下载失败 / 参数不合法
+     */
+    public static function download(array $options): string
+    {
+        // 构造完整 argv —— CommandManager::getOpt 从 originArgv 找 `--key=value` 模式
+        $argv = ['php', 'sikelan', 'trader:download-klines'];
+        foreach ($options as $key => $val) {
+            if ($val === null || $val === '') {
+                continue;
+            }
+            if ($key === 'dry_run' && $val) {
+                $argv[] = '--dry-run';
+                continue;
+            }
+            $argv[] = "--{$key}={$val}";
+        }
+        CommandManager::getInstance()->setOriginArgv($argv);
+
+        $cmd = new self();
+        $result = $cmd->exec([]);
+        if ($result === null || $result === '') {
+            throw new \RuntimeException('trader:download-klines 未返回输出（可能内部静默失败）');
+        }
+        // exec 内部已经把异常抛出来了，到达这里 = 下载成功
+        return $result;
+    }
+
     public function help(array $args): ?string
     {
         $defaults = [
@@ -354,7 +399,14 @@ HELP;
      * 在普通 CLI 入口（bin/sikelan trader:download-klines）调用时必须先进入 Coroutine::run() 调度，
      * 否则会抛 "API must be called in the coroutine"。
      *
-     * 实现模式与 ExchangeIntegrationTest::runInCoroutine() 完全一致，保证一致性。
+     * 但如果调用方本身已处于协程上下文（Swoole HTTP worker，或 task_enable_coroutine=true
+     * 的 Task 进程），**不能**再嵌套 Coroutine::run()——Swoole 不允许在协程内重复 start
+     * scheduler（Task 进程还会直接 fatal: "Unable to use async-io in task processes"）。
+     * 此时直接执行 callable 即可，当前协程已经能跑协程客户端。
+     *
+     * 协程判定与 BinanceExchange / AbstractExchange / ExchangeManager 保持一致：getuid() > 0。
+     *
+     * 实现模式与 ExchangeIntegrationTest::runInCoroutine() 一致（仅多一层"已在协程内"短路）。
      *
      * @template T
      * @param callable():T $cb
@@ -362,6 +414,12 @@ HELP;
      */
     protected function runInCoroutine(callable $cb)
     {
+        // 已在协程内（HTTP worker / task_enable_coroutine=true 的 Task 进程）→ 直接执行，禁止嵌套
+        if (class_exists(\Swoole\Coroutine::class, false) && \Swoole\Coroutine::getuid() > 0) {
+            return $cb();
+        }
+
+        // 普通 CLI 非协程环境 → 启动协程调度器
         $result = null;
         $ex     = null;
         \Swoole\Coroutine\run(static function () use ($cb, &$result, &$ex) {

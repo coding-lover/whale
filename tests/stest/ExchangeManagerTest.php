@@ -260,7 +260,7 @@ class MockExchange implements ExchangeInterface
         return ['bids' => [], 'asks' => []];
     }
 
-    public function getKlines(string $symbol, string $interval, int $limit = 100): array
+    public function getKlines(string $symbol, string $interval, int $limit = 100, ?int $startMs = null, ?int $endMs = null): array
     {
         return [];
     }

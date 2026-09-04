@@ -106,4 +106,33 @@ class TaskController
             ]);
         }
     }
+
+    public function testBackTestTask(Request $request, $params)
+    {
+        $taskManager = Framework::getInstance()->getTaskManager();
+
+        try {
+            $callbackResult = null;
+
+            $taskManager->async(\App\Tasks\BackTestTask::class, [
+                'should_throw' => true,
+                'message' => 'Async exception demo'
+            ], function ($result) use (&$callbackResult) {
+                $callbackResult = $result;
+            });
+
+            return (new Response())->withJson([
+                'status' => 'accepted',
+                'message' => 'Async task submitted',
+                'callback_received' => $callbackResult !== null,
+                'callback_data' => $callbackResult
+            ]);
+        } catch (\RuntimeException $e) {
+            return (new Response(500))->withJson([
+                'status' => 'error',
+                'message' => 'Server not running',
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }

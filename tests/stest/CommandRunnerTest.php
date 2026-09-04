@@ -25,10 +25,15 @@ class CommandRunnerTest extends TestCase
      */
     protected function tearDown(): void
     {
-        $reflection = new \ReflectionClass(CommandManager::class);
-        $prop = $reflection->getProperty('instance');
-        $prop->setAccessible(true);
-        $prop->setValue(null, null);
+        // CommandManager + CommandRunner 都是单例，两者都要清才能让后续测试完全隔离
+        foreach ([CommandManager::class, CommandRunner::class] as $cls) {
+            $reflection = new \ReflectionClass($cls);
+            if ($reflection->hasProperty('instance')) {
+                $prop = $reflection->getProperty('instance');
+                $prop->setAccessible(true);
+                $prop->setValue(null, null);
+            }
+        }
         parent::tearDown();
     }
 

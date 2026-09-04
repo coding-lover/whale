@@ -27,7 +27,6 @@ class ExchangeController
     {
         $exchangeName = $params['exchange'] ?? 'binance';
         $symbol = $params['symbol'] ?? '';
-
         if ($symbol === '') {
             return (new Response(400))->withJson([
                 'status' => 'error',

@@ -97,16 +97,51 @@ class TaskManager
 
     /**
      * onTask 事件处理
-     * 
-     * Swoole 任务进程回调，接收任务数据并执行对应任务
-     * 
+     *
+     * Swoole 任务进程回调，接收任务数据并执行对应任务。
+     *
+     * 兼容两种 Server 配置：
+     *   - task_enable_coroutine=true  → 回调签名 ($server, Swoole\Server\Task $task)
+     *     回调内处于协程上下文，必须用 $task->finish($result) 返回（不能 return）。
+     *   - task_enable_coroutine=false → 回调签名 ($server, $taskId, $workerId, $data)
+     *     同步阻塞上下文，用 return $result 返回。
+     *
      * @param SwooleServer $server 服务器实例
-     * @param int $taskId 任务 ID
-     * @param int $workerId 工作进程 ID
-     * @param string $data 任务数据（JSON 格式）
-     * @return string
+     * @param mixed ...$args 回调参数（协程模式仅 1 个 Task 对象；同步模式为 taskId/workerId/data）
+     * @return string|null 同步模式返回 JSON 结果字符串；协程模式返回 null（通过 finish 回传）
      */
-    public function onTask(SwooleServer $server, int $taskId, int $workerId, string $data): string
+    public function onTask(SwooleServer $server, ...$args)
+    {
+        // 协程模式：第二个参数是 Swoole\Server\Task 对象（有 finish() 方法 + data 属性）。
+        // 用鸭子类型判定而非 instanceof：Task 是 final 类无法 mock，且同步模式这里传的是
+        // 标量 taskId（int），不会误判。
+        if (isset($args[0]) && is_object($args[0])
+            && method_exists($args[0], 'finish')
+            && property_exists($args[0], 'data')) {
+            $task   = $args[0];
+            $taskId = (int) ($task->id ?? 0);
+            $data   = (string) ($task->data ?? '');
+
+            // 协程模式必须显式 finish，方法本身无返回值
+            $task->finish($this->executeTask($taskId, $data));
+            return null;
+        }
+
+        // 同步模式：($server, $taskId, $workerId, $data)
+        $taskId = isset($args[0]) ? (int) $args[0] : 0;
+        $data   = isset($args[2]) ? (string) $args[2] : '';
+
+        return $this->executeTask($taskId, $data);
+    }
+
+    /**
+     * 任务实际执行逻辑（两种 onTask 模式共用）
+     *
+     * @param int $taskId 任务 ID（仅用于日志）
+     * @param string $data 任务数据（JSON 格式）
+     * @return string JSON 格式的执行结果
+     */
+    protected function executeTask(int $taskId, string $data): string
     {
         try {
             $taskData = json_decode($data, true);

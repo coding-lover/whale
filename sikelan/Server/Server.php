@@ -93,6 +93,10 @@ class Server
             'max_request' => 10000,
             'task_worker_num' => swoole_cpu_num(),
             'enable_coroutine' => true,
+            // Task 进程默认无协程上下文，任务内若要调用协程客户端（交易所 HTTP 下载等），
+            // 必须开启此项；开启后 onTask 回调签名变为 ($server, Swoole\Server\Task $task)，
+            // 需用 $task->finish() 返回结果（TaskManager::onTask 已兼容两种签名）。
+            'task_enable_coroutine' => true,
             'open_tcp_nodelay' => true,
             'log_file' => LOG_PATH . '/swoole.log',
         ];

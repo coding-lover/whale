@@ -50,3 +50,21 @@
 [2026-08-22 10:02:25 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
 [2026-08-22 10:02:25 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
 [2026-08-22 10:02:25 *75300.1]	NOTICE	ssl_verify (ERRNO 1014): can not verify peer from fd#31 with error#19: self signed certificate in certificate chain
+[2026-09-01 17:16:46 *39598.1]	ERROR	php_swoole_server_rshutdown (ERRNO 503): Fatal error: Uncaught App\Services\Exchanges\ExchangeException: HTTP 400: {"code":-1121,"msg":"Invalid symbol."} in /Users/wmc/data/trae/project/whale/app/Services/Exchanges/AbstractExchange.php:196
+Stack trace:
+#0 /Users/wmc/data/trae/project/whale/app/Services/Exchanges/Adapters/BinanceExchange.php(273): App\Services\Exchanges\AbstractExchange->request('/api/v3/ticker/...', 'GET', Array, false)
+#1 /Users/wmc/data/trae/project/whale/app/Controllers/IndexController.php(24): App\Services\Exchanges\Adapters\BinanceExchange->getTicker('BTC/USDT:quarte...')
+#2 {main}
+  thrown in /Users/wmc/data/trae/project/whale/app/Services/Exchanges/AbstractExchange.php on line 196
+[2026-09-01 17:16:46 $39595.0]	WARNING	check_worker_exit_status: worker#1[pid=39598] abnormal exit, status=255, signal=0
+[2026-09-01 17:17:16 *40274.1]	ERROR	php_swoole_server_rshutdown (ERRNO 503): Fatal error: Uncaught App\Services\Exchanges\ExchangeException: HTTP 400: {"code":-1121,"msg":"Invalid symbol."} in /Users/wmc/data/trae/project/whale/app/Services/Exchanges/AbstractExchange.php:196
+Stack trace:
+#0 /Users/wmc/data/trae/project/whale/app/Services/Exchanges/Adapters/BinanceExchange.php(273): App\Services\Exchanges\AbstractExchange->request('/api/v3/ticker/...', 'GET', Array, false)
+#1 /Users/wmc/data/trae/project/whale/app/Controllers/IndexController.php(24): App\Services\Exchanges\Adapters\BinanceExchange->getTicker('BTC/USDT:quarte...')
+#2 {main}
+  thrown in /Users/wmc/data/trae/project/whale/app/Services/Exchanges/AbstractExchange.php on line 196
+[2026-09-01 17:17:16 $40271.0]	WARNING	check_worker_exit_status: worker#1[pid=40274] abnormal exit, status=255, signal=0
+[2026-09-01 17:20:38 *42259.0]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-09-02 16:20:31 *38039.0]	NOTICE	php_swoole_server_rshutdown (ERRNO 9003): worker process is terminated by exit()/die()
+[2026-09-04 17:48:11 ^58137.2]	ERROR	php_swoole_server_rshutdown (ERRNO 503): Fatal error: Swoole\Coroutine\Scheduler::start(): Unable to use async-io in task processes, please set `task_enable_coroutine` to true in @swoole-src/library/core/Coroutine/functions.php on line 24
+[2026-09-04 17:48:11 $58136.0]	WARNING	check_worker_exit_status: worker#2[pid=58137] abnormal exit, status=255, signal=0

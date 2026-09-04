@@ -6,6 +6,7 @@ use App\Services\Exchanges\Adapters\BinanceExchange;
 use App\Services\Exchanges\Adapters\OkxExchange;
 use App\Services\Exchanges\ExchangeInterface;
 use PHPUnit\Framework\TestCase;
+use Sikelan\Core\Logger;
 
 /**
  * 验证 ExchangeInterface 新增 startMs/endMs 参数（用于跨 1000 根分页）能被
@@ -57,7 +58,8 @@ class GetKlinesTimeWindowParamsTest extends TestCase
             }
         );
 
-        // 给 mock 注入 symbolFormatter（formatSymbol 用）。Binance 与 OKX 分别 new。
+        // 给 mock 注入所有依赖的属性。BinanceExchange v2 在进入 request() 前
+        //   会先调 withMarketContext → getMarketConfig()，必须读到 $this->config。
         $reflection = new \ReflectionClass($mock);
         $setProps = static function (string $prop, $value) use ($reflection, $mock) {
             if (!$reflection->hasProperty($prop)) {
@@ -70,8 +72,61 @@ class GetKlinesTimeWindowParamsTest extends TestCase
 
         if ($class === BinanceExchange::class) {
             $setProps('symbolFormatter', new \App\Services\Exchanges\Formatters\BinanceSymbolFormatter());
+            // ---- BinanceExchange v2 需要：config（三市场）/ logger / sslVerify / testnet / lastRequestTimeAtomic ----
+            $setProps('config', [
+                'base_url'       => 'https://api.binance.com',
+                'testnet'        => false,
+                'testnet_url'    => 'https://testnet.binance.vision',
+                'api_key'        => '',
+                'secret'         => '',
+                'ssl_verify'     => true,
+                'rate_limit_ms'  => 0,
+                'markets' => [
+                    'spot'   => ['path_prefix' => '/api/v3'],
+                    'usd_m'  => ['path_prefix' => '/fapi/v1',
+                                 'base_url' => 'https://fapi.binance.com',
+                                 'testnet_url' => 'https://demo-fapi.binance.com'],
+                    'coin_m' => ['path_prefix' => '/dapi/v1',
+                                 'base_url' => 'https://dapi.binance.com',
+                                 'testnet_url' => 'https://demo-dapi.binance.com'],
+                ],
+            ]);
+            $setProps('sslVerify', true);
+            $setProps('testnet',   false);
         } elseif ($class === OkxExchange::class) {
             $setProps('symbolFormatter', new \App\Services\Exchanges\Formatters\OkxSymbolFormatter());
+            $setProps('config', [
+                'base_url' => 'https://www.okx.com',
+                'testnet'  => false,
+                'testnet_url' => 'https://www.okx.com',
+                'api_key'  => '',
+                'secret'   => '',
+                'passphrase' => '',
+                'rate_limit_ms' => 0,
+                'ssl_verify' => true,
+            ]);
+            $setProps('sslVerify', true);
+            $setProps('testnet',   false);
+        }
+
+        // Logger：最小 stub。AbstractExchange::$logger 是强类型 Sikelan\Core\Logger → 必须 extends Logger，
+        //   不能用普通匿名类；跳过 Logger::__construct() 以避免 Config 等依赖
+        $loggerStub = new class extends Logger {
+            public function __construct() {}
+            public function warning($message, array $context = []): void {}
+            public function error($message, array $context = []): void {}
+            public function debug($message, array $context = []): void {}
+        };
+        $setProps('logger', $loggerStub);
+
+        // lastRequestTimeAtomic：AbstractExchange 构造函数会 new \Swoole\Atomic(0)；disableOriginalConstructor 没跑
+        if (class_exists(\Swoole\Atomic::class)) {
+            $setProps('lastRequestTimeAtomic', new \Swoole\Atomic(0));
+        } else {
+            $setProps('lastRequestTimeAtomic', new class {
+                public function get(): int { return 0; }
+                public function set(int $v): void {}
+            });
         }
         return $mock;
     }
@@ -97,8 +152,9 @@ class GetKlinesTimeWindowParamsTest extends TestCase
         // 没传 start/end 时不应出现
         $this->assertArrayNotHasKey('startTime', $query, 'startMs 为 null 时，Binance query 不应包含 startTime');
         $this->assertArrayNotHasKey('endTime',   $query, 'endMs 为 null 时，Binance query 不应包含 endTime');
-        // 固定 REST 路径
-        $this->assertSame('/api/v3/klines', $captured[0]['path']);
+        // ⭐ BinanceExchange v2 内部传 request() 使用相对前缀 '~klines'（buildRequest 会按当前市场自动拼 /api/v3、/fapi/v1、/dapi/v1）
+        //    这里断言相对路径即可；具体三市场的最终 URL/prefix 路由由 BinanceAdapterMarketTest 覆盖。
+        $this->assertSame('~klines', $captured[0]['path']);
     }
 
     public function testBinanceGetKlinesMapsStartAndEndMsToRestParams(): void

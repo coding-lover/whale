@@ -23,22 +23,57 @@ return [
     'debug_log' => env('EXCHANGE_DEBUG_LOG', false),
 
     // Binance 配置
+    // ⭐ 多市场（现货 / U本位永续 / 币本位合约）独立配置。
+    // 「SPOT 默认值」完全沿用旧的 BINANCE_* 环境变量（100% 向后兼容）；
+    // USD-M / COIN-M 的凭证与域名优先从 *_FUT_* / *_COIN_* 变量取，缺省时回退到 BINANCE_*（个人项目通常一套 key 多市场通用）。
+    // 注意：Binance 3 市场 base_url / path 前缀完全不同，不能混用：
+    //   SPOT:   https://api.binance.com       /api/v3/*
+    //   USD-M:  https://fapi.binance.com      /fapi/v1/*
+    //   COIN-M: https://dapi.binance.com      /dapi/v1/*
     'binance' => [
-        // 正式环境 API
-        'base_url' => 'https://api.binance.com',
-        // 测试网（设为 true 时使用 testnet_url）
-        'testnet' => env('BINANCE_TESTNET', false),
-        'testnet_url' => 'https://testnet.binance.vision',
-
-        // API 凭证（建议从 .env 读取）
-        'api_key' => env('BINANCE_API_KEY', 'xx'),
-        'secret' => env('BINANCE_SECRET', 'xxxx '),
-
-        // 速率限制（毫秒）：Binance 默认 10 次/秒 = 100ms
+        // 为了 100% 向后兼容（旧代码仍然使用 AbstractExchange::getBaseUrl()/getApiKey()/getSecret()
+        //   这些只认「顶层配置键」），顶层字段保留为 SPOT 的配置，并作为其他两个市场的 fallback。
+        'base_url'    => env('BINANCE_BASE_URL', env('BINANCE_SPOT_BASE_URL', 'https://api.binance.com')),
+        'testnet'     => env('BINANCE_TESTNET', false),
+        'testnet_url' => env('BINANCE_TESTNET_URL', env('BINANCE_SPOT_TESTNET_URL', 'https://testnet.binance.vision')),
+        'api_key'     => env('BINANCE_API_KEY',    env('BINANCE_SPOT_API_KEY', '')),
+        'secret'      => env('BINANCE_SECRET',     env('BINANCE_SPOT_SECRET', '')),
         'rate_limit_ms' => 100,
+        'ssl_verify'  => env('BINANCE_SSL_VERIFY', true),
 
-        // SSL 证书验证（本地开发/测试环境可设为 false）
-        'ssl_verify' => env('BINANCE_SSL_VERIFY', true),
+        // ---- 三个市场分别可覆盖 ----
+        'markets' => [
+            // · 现货（SPOT）：显式列出用于路由；默认全部继承顶层
+            'spot' => [
+                // 覆盖优先级：本项字段 > 顶层字段 > 文档默认值
+                'base_url'    => env('BINANCE_SPOT_BASE_URL', null), // null 表示继承顶层
+                'testnet_url' => env('BINANCE_SPOT_TESTNET_URL', null),
+                'api_key'     => env('BINANCE_SPOT_API_KEY', null),
+                'secret'      => env('BINANCE_SPOT_SECRET', null),
+                'ssl_verify'  => env('BINANCE_SPOT_SSL_VERIFY', null),
+                'path_prefix' => '/api/v3',   // Spot 公共/私有接口前缀（balance 例外走 /sapi/v1/capital/config/getall 暂不）
+            ],
+            // · U本位永续 & 交割 (USDⓈ-M)：BTCUSDT / BTCUSDT_250627 等
+            'usd_m' => [
+                'base_url'    => env('BINANCE_FUT_BASE_URL', 'https://fapi.binance.com'),
+                'testnet_url' => env('BINANCE_FUT_TESTNET_URL', 'https://demo-fapi.binance.com'),
+                'testnet'     => env('BINANCE_FUT_TESTNET', null),   // null = 继承顶层 testnet 开关
+                'api_key'     => env('BINANCE_FUT_API_KEY', null),   // null = 继承顶层 BINANCE_API_KEY
+                'secret'      => env('BINANCE_FUT_SECRET', null),
+                'ssl_verify'  => env('BINANCE_FUT_SSL_VERIFY', null),
+                'path_prefix' => '/fapi/v1',
+            ],
+            // · 币本位合约 (COIN-M)：BTCUSD_PERP / BTCUSD_250627 / BTCUSD_QUARTER 等
+            'coin_m' => [
+                'base_url'    => env('BINANCE_COIN_BASE_URL', 'https://dapi.binance.com'),
+                'testnet_url' => env('BINANCE_COIN_TESTNET_URL', 'https://demo-dapi.binance.com'),
+                'testnet'     => env('BINANCE_COIN_TESTNET', null),
+                'api_key'     => env('BINANCE_COIN_API_KEY', null),
+                'secret'      => env('BINANCE_COIN_SECRET', null),
+                'ssl_verify'  => env('BINANCE_COIN_SSL_VERIFY', null),
+                'path_prefix' => '/dapi/v1',
+            ],
+        ],
     ],
 
     // OKX 配置

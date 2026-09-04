@@ -152,14 +152,89 @@ class TaskManagerTest extends TestCase
 
     public function testOnTaskMethodSignature()
     {
+        // 新签名为 onTask(SwooleServer $server, ...$args)：
+        // 兼容协程模式 ($server, Task) 与同步模式 ($server, $taskId, $workerId, $data)。
         $method = new \ReflectionMethod($this->taskManager, 'onTask');
         $params = $method->getParameters();
 
-        $this->assertCount(4, $params);
+        $this->assertCount(2, $params);
         $this->assertEquals('server', $params[0]->getName());
-        $this->assertEquals('taskId', $params[1]->getName());
-        $this->assertEquals('workerId', $params[2]->getName());
-        $this->assertEquals('data', $params[3]->getName());
+        $this->assertEquals('args', $params[1]->getName());
+        // 第二个参数必须是可变参数（...$args）
+        $this->assertTrue($params[1]->isVariadic(), 'onTask 第二参数应为可变参数 ...$args');
+    }
+
+    /**
+     * 协程模式（task_enable_coroutine=true）：
+     * Swoole 传入一个带 finish()/id/data 的 Task 对象，结果必须通过 finish() 回传，方法返回 null。
+     */
+    public function testOnTaskCoroutineModeCallsFinish()
+    {
+        $mockServer = $this->createMock(\Swoole\Server::class);
+        $taskData = json_encode([
+            'class' => TestTask::class,
+            'args'  => ['foo' => 'bar'],
+        ]);
+
+        // 模拟 Swoole\Server\Task（final 类无法 mock，用鸭子类型替身）
+        $task = new class($taskData) {
+            public int $id = 99;
+            public string $data;
+            public ?string $finishedWith = null;
+
+            public function __construct(string $data)
+            {
+                $this->data = $data;
+            }
+
+            public function finish(string $result): void
+            {
+                $this->finishedWith = $result;
+            }
+        };
+
+        $return = $this->taskManager->onTask($mockServer, $task);
+
+        // 协程模式无 return
+        $this->assertNull($return);
+        // 结果通过 finish() 回传
+        $this->assertNotNull($task->finishedWith);
+        $decoded = json_decode($task->finishedWith, true);
+        $this->assertTrue($decoded['success']);
+        $this->assertTrue($decoded['data']['handled']);
+        $this->assertSame(['foo' => 'bar'], $decoded['data']['args']);
+    }
+
+    /**
+     * 协程模式下任务执行失败：也必须通过 finish() 回传错误 JSON，而不是抛异常。
+     */
+    public function testOnTaskCoroutineModeFailureCallsFinishWithError()
+    {
+        $mockServer = $this->createMock(\Swoole\Server::class);
+        $taskData = json_encode(['args' => []]); // 缺 class
+
+        $task = new class($taskData) {
+            public int $id = 100;
+            public string $data;
+            public ?string $finishedWith = null;
+
+            public function __construct(string $data)
+            {
+                $this->data = $data;
+            }
+
+            public function finish(string $result): void
+            {
+                $this->finishedWith = $result;
+            }
+        };
+
+        $return = $this->taskManager->onTask($mockServer, $task);
+
+        $this->assertNull($return);
+        $decoded = json_decode($task->finishedWith, true);
+        $this->assertFalse($decoded['success']);
+        $this->assertStringContainsString('not specified', $decoded['error']);
     }
 
     public function testOnFinishMethodSignature()

@@ -6,3 +6,52 @@
 [2026-09-01 08:32:06] [82399] [info] Hook loaded: App\Hooks\AppHook
 [2026-09-01 08:33:27] [84066] [info] Hook loaded: App\Hooks\AppHook
 [2026-09-01 08:36:12] [87411] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:16:42] [39592] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:16:42] [39592] [info] Starting Sikelan framework in http mode
+[2026-09-01 09:16:42] [39592] [info] AppHook: onInitialize called
+[2026-09-01 09:16:42] [39592] [info] AppHook: onServerStart called
+[2026-09-01 09:16:42] [39592] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 09:17:14] [40268] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:17:14] [40268] [info] Starting Sikelan framework in http mode
+[2026-09-01 09:17:14] [40268] [info] AppHook: onInitialize called
+[2026-09-01 09:17:14] [40268] [info] AppHook: onServerStart called
+[2026-09-01 09:17:14] [40268] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 09:18:01] [41144] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:18:11] [41144] [info] Starting Sikelan framework in http mode
+[2026-09-01 09:18:11] [41144] [info] AppHook: onInitialize called
+[2026-09-01 09:18:11] [41144] [info] AppHook: onServerStart called
+[2026-09-01 09:18:11] [41144] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 09:18:41] [42254] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:18:41] [42254] [info] Starting Sikelan framework in http mode
+[2026-09-01 09:18:41] [42254] [info] AppHook: onInitialize called
+[2026-09-01 09:18:41] [42254] [info] AppHook: onServerStart called
+[2026-09-01 09:18:41] [42254] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 09:20:48] [44815] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:20:48] [44815] [info] Starting Sikelan framework in http mode
+[2026-09-01 09:20:48] [44815] [info] AppHook: onInitialize called
+[2026-09-01 09:20:48] [44815] [info] AppHook: onServerStart called
+[2026-09-01 09:20:48] [44815] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 09:25:29] [51713] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:25:29] [51713] [info] Starting Sikelan framework in http mode
+[2026-09-01 09:25:29] [51713] [info] AppHook: onInitialize called
+[2026-09-01 09:25:29] [51713] [info] AppHook: onServerStart called
+[2026-09-01 09:25:29] [51713] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 09:25:31] [51719] [error] Request handler error: HTTP 400: {"code":-1121,"msg":"Invalid symbol."} {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/app\/Services\/Exchanges\/Adapters\/BinanceExchange.php(273): App\\Services\\Exchanges\\AbstractExchange->request('\/api\/v3\/ticker\/...', 'GET', Array, false)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/app\/Controllers\/IndexController.php(22): App\\Services\\Exchanges\\Adapters\\BinanceExchange->getTicker('BTC\/USDT:quarte...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#4 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(309): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#6 {main}"}
+[2026-09-01 09:25:45] [51719] [error] Request handler error: HTTP 400: {"code":-1121,"msg":"Invalid symbol."} {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/app\/Services\/Exchanges\/Adapters\/BinanceExchange.php(273): App\\Services\\Exchanges\\AbstractExchange->request('\/api\/v3\/ticker\/...', 'GET', Array, false)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/app\/Controllers\/IndexController.php(22): App\\Services\\Exchanges\\Adapters\\BinanceExchange->getTicker('BTC\/USDT:quarte...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#4 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(309): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#6 {main}"}
+[2026-09-01 09:25:46] [51719] [error] Request handler error: HTTP 400: {"code":-1121,"msg":"Invalid symbol."} {"trace":"#0 \/Users\/wmc\/data\/trae\/project\/whale\/app\/Services\/Exchanges\/Adapters\/BinanceExchange.php(273): App\\Services\\Exchanges\\AbstractExchange->request('\/api\/v3\/ticker\/...', 'GET', Array, false)\n#1 \/Users\/wmc\/data\/trae\/project\/whale\/app\/Controllers\/IndexController.php(22): App\\Services\\Exchanges\\Adapters\\BinanceExchange->getTicker('BTC\/USDT:quarte...')\n#2 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(87): App\\Controllers\\IndexController->index(Object(Sikelan\\Http\\Request), Array)\n#3 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Http\/RequestHandler.php(52): Sikelan\\Http\\RequestHandler->executeHandler(Array, Object(Sikelan\\Http\\Request))\n#4 [internal function]: Sikelan\\Http\\RequestHandler->handle(Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#5 \/Users\/wmc\/data\/trae\/project\/whale\/sikelan\/Server\/Server.php(309): call_user_func(Array, Object(Swoole\\Http\\Request), Object(Swoole\\Http\\Response))\n#6 {main}"}
+[2026-09-01 09:56:50] [96935] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:59:52] [1589] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 09:59:52] [1589] [info] Starting Sikelan framework in http mode
+[2026-09-01 09:59:52] [1589] [info] AppHook: onInitialize called
+[2026-09-01 09:59:52] [1589] [info] AppHook: onServerStart called
+[2026-09-01 09:59:52] [1589] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 10:01:36] [4023] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 10:01:36] [4023] [info] Starting Sikelan framework in http mode
+[2026-09-01 10:01:36] [4023] [info] AppHook: onInitialize called
+[2026-09-01 10:01:36] [4023] [info] AppHook: onServerStart called
+[2026-09-01 10:01:36] [4023] [info] Server starting... {"host":"127.0.0.1","port":9502}
+[2026-09-01 10:02:12] [4708] [info] Hook loaded: App\Hooks\AppHook
+[2026-09-01 10:02:12] [4708] [info] Starting Sikelan framework in http mode
+[2026-09-01 10:02:12] [4708] [info] AppHook: onInitialize called
+[2026-09-01 10:02:12] [4708] [info] AppHook: onServerStart called
+[2026-09-01 10:02:12] [4708] [info] Server starting... {"host":"127.0.0.1","port":9502}

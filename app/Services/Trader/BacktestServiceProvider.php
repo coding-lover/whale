@@ -2,11 +2,15 @@
 
 namespace App\Services\Trader;
 
+use App\Services\Exchanges\TradingSymbol;
 use App\Services\Trader\ExitRules\ExitRules;
 use App\Services\Trader\Fee\FeeCalculator;
 use App\Services\Trader\Fee\SlippageCalculator;
 use App\Services\Trader\Market\ArrayDataProvider;
+use App\Services\Trader\Market\Candle;
 use App\Services\Trader\Market\DataProviderInterface;
+use App\Services\Trader\Market\KlinesCsvReader;
+use App\Services\Trader\Market\KlinesCsvWriter;
 use App\Services\Trader\Model\Wallet;
 use App\Services\Trader\Protection\ProtectionManager;
 use App\Services\Trader\Strategy\IndicatorCalculator;
@@ -134,6 +138,225 @@ class BacktestServiceProvider
     public static function createArrayDataProvider(): ArrayDataProvider
     {
         return new ArrayDataProvider();
+    }
+
+    // ============================================================================
+    //  CSV → ArrayDataProvider 便捷入口（一键加载 / 自动下载 / 多交易对批量）
+    // ============================================================================
+
+    /**
+     * 极简入口（单交易对）：传 exchange / symbol / timeframe，自动从 runtime/trader/data 找 CSV → 读 → 塞 ArrayDataProvider。
+     *
+     * 找不到 CSV 时的行为：
+     *   ① 传了 $downloadOptions → 自动调 TraderDownloadKlinesCommand::download() 下载
+     *   ② 没传 → 抛异常带手动下载指引
+     *
+     * 多交易对请用 loadDataProviderBatch()。
+     *
+     * @param string $exchange      交易所名（binance/okx，小写）
+     * @param string $symbol        标准交易对（BTC/USDT / BTC/USDT:SWAP …）
+     * @param string $timeframe     K 线周期（1m/5m/15m/1h/4h/1d/1w）
+     * @param array<string, mixed> $downloadOptions  找不到 CSV 时自动下载的参数。支持：days / from / to / retries / retry-base / dry-run
+     * @param bool $allowGaps  strict K 线间隔校验（默认 false）
+     *
+     * @throws \RuntimeException 文件缺失且无 $downloadOptions / 下载失败 / CSV 损坏
+     */
+    public static function loadDataProvider(
+        string $exchange,
+        string $symbol,
+        string $timeframe,
+        array $downloadOptions = [],
+        bool $allowGaps = false
+    ): ArrayDataProvider {
+        $pairs = [['symbol' => $symbol]];
+        return self::loadDataProviderBatch($exchange, $timeframe, $pairs, $downloadOptions, $allowGaps);
+    }
+
+    /**
+     * 多交易对批量加载：一次把多个 symbol 的 CSV 塞进**同一个** ArrayDataProvider。
+     *
+     * 适用场景：Backtesting::run([...多个 symbol], $timeframe) 的前置数据准备。
+     *
+     * 找不到 CSV 时的行为与 loadDataProvider 相同——传了 $downloadOptions 就自动下载。
+     * 批量场景下**每个 symbol 独立判断是否需要下载**，互不阻塞。
+     *
+     *   // 批量加载：显式指定每个 pair 的覆盖参数
+     *   $dp = BacktestServiceProvider::loadDataProviderBatch('binance', '1h', [
+     *       ['symbol' => 'BTC/USDT'],
+     *       ['symbol' => 'ETH/USDT', 'download' => ['days' => 30]],     // 覆盖全局 downloadOptions
+     *       ['symbol' => 'BTC/USDT:SWAP', 'allowGaps' => true],         // 覆盖全局 allowGaps
+     *   ], ['days' => 7]);
+     *
+     *   // 简写：每个 pair 只有 symbol
+     *   $dp = BacktestServiceProvider::loadDataProviderBatch('binance', '1h', [
+     *       ['symbol' => 'BTC/USDT'],
+     *       ['symbol' => 'ETH/USDT'],
+     *       ['symbol' => 'BNB/USDT'],
+     *   ], ['days' => 7]);
+     *
+     * @param string                       $exchange         交易所名（统一前缀）
+     * @param string                       $timeframe        K 线周期（统一）
+     * @param list<array{symbol:string, download?:array<string,mixed>, allowGaps?:bool}> $pairs 每个 pair 的配置
+     * @param array<string, mixed>         $downloadOptions  全局默认下载参数（pair 级 download 会覆盖）
+     * @param bool                         $allowGaps        全局默认 allowGaps（pair 级 allowGaps 会覆盖）
+     *
+     * @throws \RuntimeException 某个 pair 加载失败时直接抛出（带 pair 信息），已加载的不会回滚
+     */
+    public static function loadDataProviderBatch(
+        string $exchange,
+        string $timeframe,
+        array $pairs,
+        array $downloadOptions = [],
+        bool $allowGaps = false
+    ): ArrayDataProvider {
+        $exchange = strtolower($exchange);
+        $dp = new ArrayDataProvider();
+        $loadedCount = 0;
+        $errors = [];
+
+        foreach ($pairs as $i => $pair) {
+            $symbol = $pair['symbol'] ?? null;
+            if (!is_string($symbol) || $symbol === '') {
+                $errors[] = "pairs[$i]: symbol 必须是非空字符串";
+                continue;
+            }
+
+            // pair 级覆盖
+            $pairDownload = (array) ($pair['download'] ?? $downloadOptions);
+            $pairAllowGaps = (bool) ($pair['allowGaps'] ?? $allowGaps);
+
+            try {
+                [$symbolObj, $candles] = self::loadOrDownloadCandles(
+                    $exchange, $symbol, $timeframe, $pairDownload
+                );
+                $dp->setCandles($symbolObj, $timeframe, $candles, $pairAllowGaps);
+                $loadedCount++;
+            } catch (\Throwable $e) {
+                $errors[] = "pairs[$i] {$symbol}: " . $e->getMessage();
+            }
+        }
+
+        if ($errors !== []) {
+            throw new \RuntimeException(
+                "[loadDataProviderBatch] 完成 {$loadedCount}/" . count($pairs) . "，错误：\n"
+                . implode("\n", array_map(fn($e) => "  • {$e}", $errors))
+            );
+        }
+
+        return $dp;
+    }
+
+    /**
+     * 纯函数：算出某个 CSV 的绝对路径。
+     *
+     * @return array{csvPath:string, filename:string}  路径 + 文件名（分别返回便于单测断言）
+     */
+    private static function resolveCsvPath(string $exchange, string $symbol, string $timeframe): array
+    {
+        $dataDir = defined('RUNTIME_PATH')
+            ? RUNTIME_PATH . '/trader/data'
+            : dirname(__DIR__, 3) . '/app/runtime/trader/data';
+        $filename = (new KlinesCsvWriter())->buildFilename($symbol, $timeframe);
+        $csvPath  = $dataDir . DIRECTORY_SEPARATOR . strtolower($exchange) . DIRECTORY_SEPARATOR . $filename;
+        return ['csvPath' => $csvPath, 'filename' => $filename];
+    }
+
+    /**
+     * 单个 pair 的"存在→读 / 不存在→下载→再读"主逻辑。
+     *
+     * @return array{0:TradingSymbol, 1:Candle[]}  symbol 解析后的对象 + K 线数组
+     * @throws \RuntimeException 文件缺失且无 $downloadOptions / 下载失败 / CSV 损坏
+     */
+    private static function loadOrDownloadCandles(
+        string $exchange,
+        string $symbol,
+        string $timeframe,
+        array $downloadOptions
+    ): array {
+        $symbolObj = TradingSymbol::parse($symbol);
+        ['csvPath' => $csvPath] = self::resolveCsvPath($exchange, $symbol, $timeframe);
+
+        // 1. 存在 → 直接读
+        if (is_file($csvPath)) {
+            return [$symbolObj, (new KlinesCsvReader())->read($csvPath)];
+        }
+
+        // 2. 不存在 + 有 downloadOptions（非 dry-run）→ 自动下载
+        if ($downloadOptions !== [] && empty($downloadOptions['dry_run'])) {
+            self::downloadKlines($exchange, $symbol, $timeframe, $downloadOptions);
+            if (!is_file($csvPath)) {
+                throw new \RuntimeException(
+                    "下载完成但 CSV 仍未找到，路径 {$csvPath}。请检查 exchange/symbol/timeframe 是否合法。"
+                );
+            }
+            return [$symbolObj, (new KlinesCsvReader())->read($csvPath)];
+        }
+
+        // 3. 不存在 + （没给 downloadOptions 或带了 dry-run）→ 抛异常带手动下载指引
+        throw new \RuntimeException(self::buildMissingFileHint($csvPath, $exchange, $symbol, $timeframe));
+    }
+
+    /**
+     * 调 TraderDownloadKlinesCommand::download() —— 把 exchange/symbol/timeframe/days 拼成完整参数。
+     */
+    private static function downloadKlines(
+        string $exchange,
+        string $symbol,
+        string $timeframe,
+        array $options
+    ): void {
+        if (!class_exists(\App\Commands\TraderDownloadKlinesCommand::class)) {
+            throw new \RuntimeException(
+                'TraderDownloadKlinesCommand 未加载。请确保 Composer autoload 正确。'
+            );
+        }
+        $merged = array_merge([
+            'exchange' => $exchange,
+            'symbol'   => $symbol,
+            'interval' => $timeframe,
+            'days'     => 7,
+        ], $options);
+
+        echo "\033[33m[loadDataProvider]\033[0m CSV 不存在，自动下载 {$exchange} · {$symbol} · {$timeframe} ...\n";
+
+        try {
+            \App\Commands\TraderDownloadKlinesCommand::download($merged);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException(
+                "自动下载 K 线失败：" . $e->getMessage()
+                . "（请手动执行：php bin/sikelan trader:download-klines --exchange={$exchange} --symbol={$symbol} --interval={$timeframe}"
+                . (isset($options['from']) ? " --from={$options['from']}" : '')
+                . (isset($options['to'])   ? " --to={$options['to']}"   : '')
+                . (isset($options['days']) ? " --days={$options['days']}" : '')
+                . "）",
+                (int) $e->getCode(),
+                $e
+            );
+        }
+    }
+
+    /**
+     * 文件缺失时生成的可读异常消息。
+     */
+    private static function buildMissingFileHint(
+        string $csvPath,
+        string $exchange,
+        string $symbol,
+        string $timeframe
+    ): string {
+        return <<<MSG
+[loadDataProvider] CSV 不存在：{$csvPath}
+
+请任选一种方式解决：
+
+  ① 手动下载（推荐，最灵活）：
+     php bin/sikelan trader:download-klines \\
+       --exchange={$exchange} --symbol={$symbol} --interval={$timeframe} --days=7
+
+  ② 调用时传入 downloadOptions 让它自动下载：
+     \$dp = BacktestServiceProvider::loadDataProvider('{$exchange}', '{$symbol}', '{$timeframe}', ['days' => 7]);
+
+MSG;
     }
 
     // ============================================================================
