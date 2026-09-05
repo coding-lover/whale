@@ -9,6 +9,14 @@
 
 ## 目录
 
+- [零、命令行一行回测（trader:backtest，最快上手）](#零命令行一行回测traderbacktest最快上手)
+  - [零参数快速开始](#零参数快速开始)
+  - [常用示例](#常用示例)
+  - [参数速查表](#参数速查表)
+- [零·2 创建策略脚手架（trader:make-strategy）](#零2-创建策略脚手架tradermake-strategy)
+  - [最简用法](#最简用法-1)
+  - [三个模板](#三个模板)
+  - [参数速查表](#参数速查表-1)
 - [一、创建回测](#一创建回测)
   - [1.1 四种创建方式总览](#11-四种创建方式总览)
   - [1.2 方式一：loadDataProvider + newBacktestingByName（推荐）](#12-方式一loaddataprovider--newbacktestingbyname推荐)
@@ -43,6 +51,182 @@
 
 ---
 
+# 零、命令行一行回测（trader:backtest，最快上手）
+
+> 不想写 PHP 代码？`trader:backtest` 命令把"加载数据（CSV 缺失自动下载）→ 装配策略 →
+> 运行回测 → 输出绩效报告"整条链路封装成一条命令。所有参数都有默认值，零参数即可跑。
+
+## 零参数快速开始
+
+```bash
+# 等价于：binance · BTC/USDT · 1h · MeanRevStd 策略，CSV 缺失自动下载近 7 天
+php bin/sikelan trader:backtest
+```
+
+输出示例（彩色人类可读报告）：
+
+```
+[INFO] 回测完成
+────────────────────────────────────────────────────
+  策略          Bollinger(20,2.0σ) + RSI(14,30/65) MeanReversion [v1.0-std]
+  交易所/周期   binance · 1h
+  交易对        BTC/USDT, ETH/USDT
+  回测区间      2026-08-25 ~ 2026-09-02 (UTC)
+  初始/期末资金 10,000.00 → 10,002.64 USDT
+────────────────────────────────────────────────────
+  总收益率      +0.03%  (净利 2.64)
+  年化收益      +1.30%
+  夏普比率      2.63
+  索提诺比率    5.53
+  卡玛比率      9.34
+  最大回撤      -0.14%  (-13.91)
+────────────────────────────────────────────────────
+  交易总数      2  (盈 1 / 亏 1)
+  胜率          50.00%
+  盈亏比        1.87
+  利润因子      1.87
+  平均持仓      270.00 分钟
+  信号/拒绝     3 / 1
+────────────────────────────────────────────────────
+```
+
+## 常用示例
+
+```bash
+# 多交易对（逗号分隔，天然支持组合回测）
+php bin/sikelan trader:backtest --symbol=BTC/USDT,ETH/USDT
+
+# 指定策略 + 15分钟周期 + 最近 30 天（同时作为 CSV 缺失时的下载天数）
+php bin/sikelan trader:backtest --strategy=EmaCross20_50 --timeframe=15m --days=30
+
+# 指定回测区间（UTC 自然日，含首尾）
+php bin/sikelan trader:backtest --from=2026-01-01 --to=2026-03-31
+
+# 只用本地已有 CSV，不联网下载（CI / 离线环境）
+php bin/sikelan trader:backtest --no-download
+
+# 机器可读 JSON（30+ 指标全量输出，便于脚本/看板处理）
+php bin/sikelan trader:backtest --json
+
+# 先看回测计划和每个 pair 的 K 线数，不实际运行（排错首选）
+php bin/sikelan trader:backtest --dry-run
+
+# 查看 config/trader.php 已注册的所有策略别名
+php bin/sikelan trader:backtest --list-strategies
+```
+
+## 参数速查表
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `--exchange=NAME` | `binance` | 交易所 binance/okx（env `BACKTEST_EXCHANGE`） |
+| `--symbol=P1,P2` | `BTC/USDT` | 交易对，逗号分隔多个（env `BACKTEST_SYMBOLS`；别名 `--symbols`） |
+| `--timeframe=TF` | `1h` | 周期 1m/5m/15m/30m/1h/4h/1d/1w（别名 `--interval`；env `BACKTEST_TIMEFRAME`） |
+| `--strategy=ALIAS` | `MeanRevStd` | 策略别名或完整类名（`--list-strategies` 查看；env `BACKTEST_STRATEGY`） |
+| `--days=N` | — | 回测最近 N 天；**同时**作为 CSV 缺失时的自动下载天数。与 `--from/--to` 二选一 |
+| `--from=YYYY-MM-DD` | — | 回测起始日（含，UTC）；CSV 缺失时也按此区间下载 |
+| `--to=YYYY-MM-DD` | — | 回测结束日（含，UTC） |
+| `--capital=N` | config `10000` | 初始资金（env `BACKTEST_CAPITAL`） |
+| `--warmup=N` | `60` | 指标预热 K 线数。**K 线不足时调小**（如 7 天 1h 仅 168 根），数据充足可调大 |
+| `--no-download` | 关 | CSV 缺失时不自动下载，直接报错并给出手动下载命令 |
+| `--allow-gaps` | 关 | 允许 K 线存在缺口（默认严格校验周期连续/对齐） |
+| `--list-strategies` | — | 列出已注册策略别名后退出 |
+| `--json` | 关 | JSON 输出全部指标 |
+| `--dry-run` | — | 只打印计划 + 每个 pair 的 K 线数，不运行 |
+| `-h, --help` | — | 查看帮助 |
+
+**行为说明**：
+
+- 数据文件位于 `runtime/trader/data/<exchange>/<SYMBOL>_<TF>.csv`；缺失时自动调
+  `trader:download-klines` 下载（时间窗口由 `--days` / `--from` / `--to` 决定，都不给则下载近 7 天）。
+- 回测的交易对/周期**无需重复声明**——自动从已加载数据推导（见 [1.1](#11-四种创建方式总览)）。
+- 所有参数校验失败 / 下载失败 / 策略未找到都会输出红色 `[ERROR]` + 修复提示，不会抛未捕获异常。
+- 跑完没有交易时会给出黄色 `[WARN]` 提示（常见原因：天数太短、warmup 太大、策略不匹配行情）。
+
+---
+
+# 零·2 创建策略脚手架（trader:make-strategy）
+
+> 一行创建策略类文件 + 自动注册到 `config/trader.php` 的 `strategies` 注册表，
+> 省去手写类骨架和手动改配置的重复劳动。
+
+## 最简用法
+
+```bash
+# 只给别名 --name；类名自动 = 别名 + 'Strategy'，默认 ema 模板
+php bin/sikelan trader:make-strategy --name=MyStrat
+```
+
+执行后会：
+1. 生成 `app/Services/Trader/Strategies/MyStratStrategy.php`（EMA 金叉死叉完整模板）
+2. 在 `config/trader.php` 的 `strategies` 数组追加：
+   ```php
+   'MyStrat' => [
+       'class'     => \App\Services\Trader\Strategies\MyStratStrategy::class,
+       'construct' => [20, 50, 0.003],
+   ],
+   ```
+3. 自动 `php -l` 语法校验
+4. 提示下一步：`php bin/sikelan trader:backtest --strategy=MyStrat`
+
+## 三个模板
+
+| `--template` | 说明 | 构造参数 |
+|---|---|---|
+| `ema`（默认） | EMA 金叉死叉，完整可跑，含止损/ROI/风控 | `emaShort, emaLong, filterPct` |
+| `meanrev` | 布林带 + RSI 均值回归，含 trailing stop / maxHoldBars | `bbPeriod, bbStdMult, rsiPeriod, rsiOversold, rsiOverbought, volFilterFactor` |
+| `blank` | 空白骨架，只留 3 个必须方法的 TODO，自定义逻辑 | 无（config 用简写 `'alias' => \Class::class`） |
+
+**常用示例**：
+
+```bash
+# 指定类名（与别名不同）
+php bin/sikelan trader:make-strategy --name=MacdTrend --class=MacdTrendStrategy
+
+# 均值回归模板
+php bin/sikelan trader:make-strategy --name=MeanRev2 --template=meanrev
+
+# 覆盖构造参数（按模板顺序，逗号分隔）
+php bin/sikelan trader:make-strategy --name=FastEma --params=10,20,0.001
+
+# 自定义保存目录（命名空间从目录自动推导）
+php bin/sikelan trader:make-strategy --name=MyStrat --dir=app/MyStrats
+
+# 只生成类文件，不写 config
+php bin/sikelan trader:make-strategy --name=MyStrat --no-register
+
+# 先看计划不执行
+php bin/sikelan trader:make-strategy --name=MyStrat --dry-run
+
+# 已存在时覆盖
+php bin/sikelan trader:make-strategy --name=MyStrat --force
+```
+
+## 参数速查表
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `--name=ALIAS` | **必填** | 策略别名（config 的 key；只能含字母/数字/_/-） |
+| `--class=CLASS` | 别名 + `Strategy` | 类名（可选，必须符合 PHP 标识符） |
+| `--dir=PATH` | `app/Services/Trader/Strategies` | 保存目录；相对路径基于项目根 |
+| `--namespace=NS` | 从目录自动推导 | 命名空间（目录在 `app/` 下时自动推为 `App\...`） |
+| `--template=ema\|meanrev\|blank` | `ema` | 模板选择 |
+| `--params=v1,v2,...` | 模板默认值 | 构造参数值，逗号分隔（int/float/带引号字符串） |
+| `--no-register` | 关 | 只生成类文件，不写入 config |
+| `--config=PATH` | 项目 `config/trader.php` | 指定要修改的配置文件路径 |
+| `-f, --force` | 关 | 类文件已存在时覆盖 |
+| `--dry-run` | — | 只打印计划，不生成文件、不改 config |
+| `-h, --help` | — | 查看帮助 |
+
+**安全机制**：
+- 别名只能含 `A-Za-z0-9_-`，避免破坏 PHP 数组 key
+- 类文件已存在时默认拒绝（`--force` 才覆盖）
+- 别名已存在于 config 时报错（即使类文件不同名），防止重复注册
+- config 注入用 `token_get_all` 精确定位 `strategies` 子数组，不破坏注释 / `env()` / 其他结构
+- 生成后自动 `php -l` 校验，失败给出警告
+
+---
+
 # 一、创建回测
 
 ## 1.1 四种创建方式总览
@@ -55,8 +239,9 @@
 | ③ 分步 | `createStrategyByName` + `newBacktesting` | 手动加载 | 别名 → 可覆盖构造参数 | 需要拿到策略实例 / GridSearch 调参 | ⭐⭐⭐ |
 | ④ 纯数组 | `build` + `createStrategyByName` | 手动加载 | 别名 / 完整类名 | 单元测试 / 无容器环境 | ⭐⭐⭐ |
 
-> 所有方式最终都返回 `Backtesting` 实例，调用 `->run($symbols, $timeframe)` 即可跑回测。
-> 注意 `run()` 第一个参数是 `array $symbols`——天然支持多交易对，批量加载用 **①-2**。
+> 所有方式最终都返回 `Backtesting` 实例，调用 `->run()` 即可跑回测。
+> `run()` 的交易对和周期参数**全部可选**：省略时自动从已加载的 DataProvider 推导（`run()` 零参数即可）；显式传参可只回测部分交易对、限定时间窗口。
+> 注意 `run()` 的交易对参数是 `array`——天然支持多交易对，批量加载用 **①-2**。
 
 ---
 
@@ -88,10 +273,11 @@ $backtest = BacktestServiceProvider::newBacktestingByName(
 );
 
 // 3) 运行
-$result = $backtest->run(
-    [\App\Services\Exchanges\TradingSymbol::parse('BTC/USDT')],
-    '1h'
-);
+//    交易对 + 周期在上面加载数据时已声明，run() 可零参数自动推导（等价于 run([BTC/USDT], '1h')）
+$result = $backtest->run();
+
+// 也可显式指定，例如只回测部分交易对或限定时间窗口：
+// $result = $backtest->run([TradingSymbol::parse('BTC/USDT')], '1h', $fromMs, $toMs);
 
 // 4) 看报表
 $perf = new PerformanceReport($result, 100_000, 365);
@@ -165,19 +351,28 @@ $dp = BacktestServiceProvider::loadDataProviderBatch('binance', '1h', [
     ['symbol' => 'BTC/USDT:SWAP',  'allowGaps' => true],            // 覆盖全局 allowGaps
 ], ['days' => 7]);
 
-// 跑多交易对回测：传数组即可
+// 跑多交易对回测：交易对和周期都已在 loadDataProviderBatch 声明，run() 零参数即可
 $backtest = BacktestServiceProvider::newBacktestingByName(
     container(), $dp, 'MeanRevStd'
 );
-$result = $backtest->run(
-    [
-        TradingSymbol::parse('BTC/USDT'),
-        TradingSymbol::parse('ETH/USDT'),
-        TradingSymbol::parse('BTC/USDT:SWAP'),
-    ],
-    '1h'
-);
+$result = $backtest->run();   // 自动推导：symbols=[BTC,ETH,BTC:SWAP]，timeframe=1h
+
+// 如需只回测其中部分交易对，或限定时间窗口，仍可显式传参：
+// $result = $backtest->run(
+//     [TradingSymbol::parse('BTC/USDT'), TradingSymbol::parse('ETH/USDT')],
+//     '1h', $fromMs, $toMs
+// );
 ```
+
+**`run()` 参数自动推导规则**（全部参数可选，向后兼容）：
+
+| 参数 | 省略时（null）的行为 |
+|------|---------------------|
+| `$symbols` | 取 `DataProvider::getAvailableSymbols()`，即全部已加载交易对 |
+| `$timeframe` | 取 `DataProvider::getAvailableTimeframes()`：**仅 1 个周期**时自动使用；**多个周期**时抛 `InvalidArgumentException` 要求显式指定（避免歧义）；**0 个**（空 provider）抛异常 |
+| `$fromMs / $toMs` | 默认 `null`，即回测全部已加载时间范围 |
+
+> 提示：`loadDataProvider` / `loadDataProviderBatch` 一次只加载一个周期，所以正常流程下 `run()` 零参数即可；只有手动往同一个 DataProvider 塞了多个周期时，才需要显式指定 timeframe。
 
 **参数说明**：
 

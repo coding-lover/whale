@@ -48,14 +48,9 @@ class BackTestTask implements TaskInterface
             ]
         );
 
-        // 3) 运行
-        $result = $backtest->run(
-            [
-                \App\Services\Exchanges\TradingSymbol::parse('BTC/USDT'),
-                \App\Services\Exchanges\TradingSymbol::parse('ETH/USDT'),
-            ],
-            '15m'
-        );
+        // 3) 运行：交易对和周期在上面 loadDataProviderBatch 已声明，这里零参数自动推导
+        //    （等价于 run([BTC/USDT, ETH/USDT], '15m')，但不用重复写一遍）
+        $result = $backtest->run();
 
         // 4) 看报表
         $perf = new PerformanceReport($result, 100_000, 365);

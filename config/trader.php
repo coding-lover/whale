@@ -116,5 +116,10 @@ return [
         //     'class'     => \App\Services\Trader\Strategies\BollingerRsiMeanReversionStrategy::class,
         //     'construct' => [20, 1.8, 14, 35.0, 60.0, 0.5],   // 更宽的入场：更宽带宽 1.8σ RSI 35
         // ],
+
+        'WmcStrategy' => [
+            'class'     => \App\Services\Trader\Strategies\WmcStrategy::class,
+            'construct' => [20, 50, 0.003],
+        ],
     ],
 ];

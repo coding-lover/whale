@@ -275,7 +275,159 @@ class TraderBacktestTest extends TestCase
         $this->assertArrayHasKey('sharpe_ratio',     $perf->all());
     }
 
+    // ---- 10. run() 零参数：symbols + timeframe 全部从 DataProvider 自动推导 ----
+
+    public function testRunWithNoArgsAutoResolvesSymbolsAndTimeframe(): void
+    {
+        if (!extension_loaded('trader')) {
+            $this->markTestSkipped('缺少 trader 扩展，跳过 Backtesting 自动推导测试。');
+        }
+        $dp = new ArrayDataProvider();
+        $symbol = TradingSymbol::parse('BTC/USDT');
+        $dp->setCandles($symbol, '5m', $this->makeTrendCandles(180, 300_000));
+
+        $strategy = new EmaCrossStrategy(5, 15, 0.0);
+        $backtest = BacktestServiceProvider::build($this->minimalBacktestConfig(), $dp, $strategy, null);
+
+        // 不传任何参数 —— 应自动推导 symbol=BTC/USDT、timeframe=5m
+        $result = $backtest->run();
+
+        $this->assertSame('5m', $result->getTimeframe(), 'timeframe 应自动推导为 5m');
+        $this->assertGreaterThanOrEqual(1, $result->getTradeCount(), '自动推导后应正常跑出交易');
+    }
+
+    public function testRunWithNoArgsAutoResolvesMultipleSymbols(): void
+    {
+        if (!extension_loaded('trader')) {
+            $this->markTestSkipped('缺少 trader 扩展，跳过。');
+        }
+        $dp = new ArrayDataProvider();
+        // 两个交易对、同一周期 → run() 零参应把两个都回测
+        $dp->setCandles(TradingSymbol::parse('BTC/USDT'), '5m', $this->makeTrendCandles(180, 300_000));
+        $dp->setCandles(TradingSymbol::parse('ETH/USDT'), '5m', $this->makeTrendCandles(180, 300_000));
+
+        $this->assertCount(2, $dp->getAvailableSymbols());
+        $this->assertSame(['5m'], $dp->getAvailableTimeframes());
+
+        $strategy = new EmaCrossStrategy(5, 15, 0.0);
+        $backtest = BacktestServiceProvider::build($this->minimalBacktestConfig(), $dp, $strategy, null);
+
+        $result = $backtest->run(); // 零参数
+        $this->assertSame('5m', $result->getTimeframe());
+        $this->assertGreaterThanOrEqual(1, $result->getTradeCount());
+    }
+
+    // ---- 11. run() 零参数但 provider 有多个周期 → 歧义，必须报错让用户显式指定 ----
+
+    public function testRunWithAmbiguousTimeframeThrows(): void
+    {
+        if (!extension_loaded('trader')) {
+            $this->markTestSkipped('缺少 trader 扩展，跳过。');
+        }
+        $dp = new ArrayDataProvider();
+        $symbol = TradingSymbol::parse('BTC/USDT');
+        $dp->setCandles($symbol, '5m', $this->makeTrendCandles(180, 300_000));
+        // 同一 symbol 再塞一份 1h → provider 内出现两个周期
+        $dp->setCandles($symbol, '1h', $this->makeTrendCandles(180, 3_600_000));
+
+        $this->assertSame(['5m', '1h'], $dp->getAvailableTimeframes());
+
+        $strategy = new EmaCrossStrategy(5, 15, 0.0);
+        $backtest = BacktestServiceProvider::build($this->minimalBacktestConfig(), $dp, $strategy, null);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('多个周期');
+        $backtest->run();
+    }
+
+    // ---- 12. run() 零参数但 provider 为空 → 报"无交易对/数据"错误 ----
+
+    public function testRunWithEmptyProviderThrows(): void
+    {
+        $dp = new ArrayDataProvider(); // 不塞任何数据
+        $this->assertSame([], $dp->getAvailableSymbols());
+        $this->assertSame([], $dp->getAvailableTimeframes());
+
+        $strategy = new EmaCrossStrategy(5, 15, 0.0);
+        $backtest = BacktestServiceProvider::build($this->minimalBacktestConfig(), $dp, $strategy, null);
+
+        // 空 provider：自动推导拿到 0 个 symbol，直接报错（symbols 检查先于 timeframe 推导）
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('needs at least one symbol');
+        $backtest->run();
+    }
+
+    // ---- 13. ArrayDataProvider::getAvailableTimeframes 去重 ----
+
+    public function testArrayDataProviderGetAvailableTimeframesDedup(): void
+    {
+        $dp = new ArrayDataProvider();
+        $btc = TradingSymbol::parse('BTC/USDT');
+        $eth = TradingSymbol::parse('ETH/USDT');
+
+        // 空 provider
+        $this->assertSame([], $dp->getAvailableTimeframes());
+
+        // 两个 symbol 都是 5m → 去重后仅 1 个
+        $dp->setCandles($btc, '5m', $this->makeTrendCandles(50, 300_000));
+        $dp->setCandles($eth, '5m', $this->makeTrendCandles(50, 300_000));
+        $this->assertSame(['5m'], $dp->getAvailableTimeframes());
+
+        // 再加一个 1h → 2 个，保持首次出现顺序
+        $dp->setCandles($btc, '1h', $this->makeTrendCandles(50, 3_600_000));
+        $this->assertSame(['5m', '1h'], $dp->getAvailableTimeframes());
+    }
+
     // ====== helpers ======
+
+    /**
+     * 生成 n 根按 $stepMs 严格对齐、带三段趋势的合法 K 线（横盘 → 上涨 → 下跌）
+     *
+     * 供 EmaCross E2E / 自动推导测试使用：三段走势保证 EMA 短周期必然上穿/下穿长周期。
+     *
+     * @return Candle[]
+     */
+    private function makeTrendCandles(int $n, int $stepMs): array
+    {
+        $startTs = (int) floor(1_700_000_000_000 / $stepMs) * $stepMs;
+        $third   = (int) floor($n / 3);
+        $candles = [];
+        $p = 100.0;
+        for ($i = 0; $i < $n; $i++) {
+            $ts = $startTs + $i * $stepMs;
+            if ($i < $third) {
+                $delta = 0.0;   // 横盘
+            } elseif ($i < $third * 2) {
+                $delta = 0.8;   // 稳步上行
+            } else {
+                $delta = -0.9;  // 下行
+            }
+            $o = $p;
+            $c = $o + $delta;
+            $h = max($o, $c) + 0.3;
+            $l = min($o, $c) - 0.3;
+            $candles[] = new Candle($ts, $o, $h, $l, $c, 100 + $i);
+            $p = $c;
+        }
+        return $candles;
+    }
+
+    /**
+     * 最小可跑 Backtesting 的配置（零手续费 / 零滑点 / 零冷却，消除干扰）
+     */
+    private function minimalBacktestConfig(): array
+    {
+        return [
+            'stake_currency'  => 'USDT',
+            'initial_capital' => 10_000.0,
+            'warmup_candles'  => 20,
+            'run_mode'        => 'backtest',
+            'trading_mode'    => 'spot',
+            'fee' => ['maker_rate' => 0, 'taker_rate' => 0],
+            'slippage' => ['default_pct' => 0, 'pair_overrides' => []],
+            'protection' => ['default_cooling_ms' => 0, 'by_exit_reason' => []],
+        ];
+    }
 
     private function makeEngine(FeeCalculator $fee, SlippageCalculator $sl): MatchingEngine
     {

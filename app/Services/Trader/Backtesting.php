@@ -106,16 +106,37 @@ class Backtesting implements LoggerAwareInterface
     /**
      * 主入口：对一组 symbol 执行回测
      *
-     * @param TradingSymbol[] $symbols   要回测的交易对
-     * @param string          $timeframe Timeframe::TF_*
-     * @param int|null        $fromMs    起始毫秒（可选）
-     * @param int|null        $toMs      结束毫秒（可选）
+     * 参数全部可选——省略时自动从注入的 DataProvider 推导，避免"加载时声明一遍、
+     * 运行时再传一遍"的冗余：
+     *   - $symbols 为 null   → 取 dataProvider->getAvailableSymbols()（全部已加载交易对）
+     *   - $timeframe 为 null → 取 dataProvider->getAvailableTimeframes()：
+     *       · 仅 1 个周期 → 自动使用
+     *       · 0 个周期   → 抛异常（provider 为空）
+     *       · 多个周期   → 抛异常（歧义，必须显式指定）
+     *
+     * 显式传参仍完全支持（向后兼容），例如只想回测已加载数据中的某几个交易对。
+     *
+     * @param TradingSymbol[]|null $symbols   要回测的交易对；null = 全部已加载
+     * @param string|null          $timeframe Timeframe::TF_*；null = 自动推导
+     * @param int|null             $fromMs    起始毫秒（可选）
+     * @param int|null             $toMs      结束毫秒（可选）
      * @return BacktestResult
      */
-    public function run(array $symbols, string $timeframe, ?int $fromMs = null, ?int $toMs = null): BacktestResult
+    public function run(?array $symbols = null, ?string $timeframe = null, ?int $fromMs = null, ?int $toMs = null): BacktestResult
     {
+        // ---- 自动推导交易对：未传则用 DataProvider 中全部已加载交易对 ----
+        if ($symbols === null) {
+            $symbols = $this->dataProvider->getAvailableSymbols();
+        }
         if ($symbols === []) {
-            throw new \InvalidArgumentException('Backtesting::run needs at least one symbol');
+            throw new \InvalidArgumentException(
+                'Backtesting::run needs at least one symbol (none passed and none loaded in DataProvider)'
+            );
+        }
+
+        // ---- 自动推导周期：未传则要求 DataProvider 中恰好只有 1 个周期 ----
+        if ($timeframe === null) {
+            $timeframe = $this->resolveTimeframe();
         }
         if (!Timeframe::isValid($timeframe)) {
             throw new \InvalidArgumentException("Invalid timeframe: {$timeframe}");
@@ -395,5 +416,32 @@ class Backtesting implements LoggerAwareInterface
         $this->equitySnapshots = [];
         $this->rejectedSignals = 0;
         $this->signalsTotal    = 0;
+    }
+
+    /**
+     * 从 DataProvider 自动推导唯一回测周期
+     *
+     * 仅当 provider 中所有已加载数据都属于同一个周期时才可自动推导；
+     * 为空或存在多个周期时抛异常，强制调用方显式指定（避免静默选错周期）。
+     *
+     * @return string Timeframe::TF_*
+     * @throws \RuntimeException         provider 为空（没有任何已加载数据）
+     * @throws \InvalidArgumentException provider 中存在多个周期（歧义）
+     */
+    private function resolveTimeframe(): string
+    {
+        $timeframes = $this->dataProvider->getAvailableTimeframes();
+        if ($timeframes === []) {
+            throw new \RuntimeException(
+                '[trader] DataProvider 中没有任何已加载数据，无法自动推导 timeframe；请先加载数据或显式传入周期'
+            );
+        }
+        if (count($timeframes) > 1) {
+            throw new \InvalidArgumentException(
+                '[trader] DataProvider 加载了多个周期（' . implode(', ', $timeframes)
+                . '），无法自动决定回测周期；请在 run() 第二个参数显式指定'
+            );
+        }
+        return $timeframes[0];
     }
 }

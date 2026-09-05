@@ -52,6 +52,18 @@ interface DataProviderInterface
     public function getAvailableSymbols(): array;
 
     /**
+     * 返回当前 DataProvider 中已加载数据的所有周期（去重）
+     *
+     * 用于 Backtesting::run() 在未显式指定 timeframe 时自动推导：
+     *   - 返回 0 个：provider 为空（没有任何数据）
+     *   - 返回 1 个：可安全地自动使用该周期
+     *   - 返回多个：存在歧义，调用方必须显式指定要回测的周期
+     *
+     * @return string[] Timeframe::TF_* 字符串列表（如 ['1h']）
+     */
+    public function getAvailableTimeframes(): array;
+
+    /**
      * 检查指定 pair+timeframe 是否有足够的数据（最少数目）
      *
      * @param int $minCandles 最少需要几根 K 线（比如指标预热需要 200 根）

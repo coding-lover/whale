@@ -150,6 +150,24 @@ class ArrayDataProvider implements DataProviderInterface
         return $symbols;
     }
 
+    /**
+     * 返回所有已加载数据涉及的周期（去重，保持首次出现顺序）
+     *
+     * 遍历二级 Map [symbol][timeframe]，把每个 symbol 下的 timeframe 键收集起来。
+     *
+     * @return string[]
+     */
+    public function getAvailableTimeframes(): array
+    {
+        $tfs = [];
+        foreach ($this->store as $byTimeframe) {
+            foreach (array_keys($byTimeframe) as $tf) {
+                $tfs[$tf] = true; // 用 assoc key 去重
+            }
+        }
+        return array_keys($tfs);
+    }
+
     public function hasEnoughData(TradingSymbol $symbol, string $timeframe, int $minCandles): bool
     {
         $key = (string) $symbol;
