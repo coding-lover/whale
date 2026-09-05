@@ -540,12 +540,19 @@ class TraderBacktestCommand implements CommandInterface
         return $v === null ? '-' : number_format((float) $v, $decimals);
     }
 
-    /** ISO 时间（2026-09-05T12:00:00+00:00）→ 日期短串 */
+    /** ISO 时间（2026-09-05T12:00:00+00:00）→ 日期短串，并在末尾追加区间天数 */
     private function rangeText($startIso, $endIso): string
     {
         $s = $startIso ? substr((string) $startIso, 0, 10) : '?';
         $e = $endIso ? substr((string) $endIso, 0, 10) : '?';
-        return "{$s} ~ {$e} (UTC)";
+        $range = "{$s} ~ {$e} (UTC)";
+
+        // 按展示的两个自然日计算区间天数（与 --days 参数口径一致，如 08-06 ~ 09-05 = 30 天）
+        if ($startIso && $endIso) {
+            $days = (int) round((strtotime($e . ' UTC') - strtotime($s . ' UTC')) / 86400);
+            $range .= " · 共 {$days} 天";
+        }
+        return $range;
     }
 
     private function msDate(?int $ms): string

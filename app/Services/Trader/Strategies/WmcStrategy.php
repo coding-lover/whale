@@ -12,12 +12,17 @@ use App\Services\Trader\Strategy\SignalCols;
  *
  * 规则：
  *   入场 LONG：EMA(short) 上穿 EMA(long)，且收盘价 > EMA(long) × (1 + filterPct)
- *   出场 LONG：EMA(short) 下穿 EMA(long)
+ *   出场 LONG：EMA(short) 下穿 EMA(long)，或触发止损 / ROI 阶梯
  *
- * 构造参数（可在 config/trader.php 的 construct 数组里覆盖）：
- *   int   $emaShort    短周期 EMA
- *   int   $emaLong     长周期 EMA（须 > short）
- *   float $filterPct   假信号过滤百分比（0.003 = 0.3%）
+ * 默认参数（经 SKR/USDT:SWAP 15m、30 天数据网格寻优，样本内外两段都盈利）：
+ *   int   $emaShort    短周期 EMA（12）
+ *   int   $emaLong     长周期 EMA（60，须 > short）
+ *   float $filterPct   假信号过滤百分比（0.005 = 0.5%）
+ *
+ * 风控（寻优结论）：
+ *   - 止损 1.5%（紧止损，EMA 死叉本身负责趋势反转离场）
+ *   - ROI 阶梯放宽到 3%/2%/1%/0.5%（紧阶梯 1% 止盈会过早砍掉盈利单，盈亏比 < 1）
+ *   - 不启用追踪止损（网格实测 trailing 全部更差）
  */
 class WmcStrategy extends AbstractStrategy
 {
@@ -28,23 +33,23 @@ class WmcStrategy extends AbstractStrategy
     private int $emaLongPeriod;
     private float $filterPct;
 
-    // 风控（覆写父类属性）
-    protected $stoploss       = 0.03;
-    protected $minimalRoi     = [
-        0   => 0.01,
-        60  => 0.008,
-        180 => 0.005,
-        360 => 0,
+    // 风控（覆写父类属性；数值经 15m 网格寻优）
+    protected $stoploss       = 0.015;       // 1.5% 固定止损
+    protected $minimalRoi     = [            // 阶梯止盈（key=开仓后分钟数，15m 下 8/24/48 根）
+        0   => 0.03,    // 开仓即达 3% 止盈
+        120 => 0.02,    // 2 小时后 2% 就走
+        360 => 0.01,    // 6 小时后 1%
+        720 => 0.005,   // 12 小时后 0.5%
     ];
-    protected $trailingStop   = 0.0;
+    protected $trailingStop   = 0.0;         // 不启用追踪止损（实测有害）
     protected $defaultStakeAmount = 1000.0;
     protected $maxOpenTrades = 10;
     protected $maxOpenTradesPerPair = 1;
 
-    protected $version = '1.0';
-    protected $description = 'EMA 金叉死叉策略';
+    protected $version = '1.1';
+    protected $description = 'EMA 金叉死叉策略（12/60 参数寻优版）';
 
-    public function __construct(int $emaShort = 20, int $emaLong = 50, float $filterPct = 0.003)
+    public function __construct(int $emaShort = 12, int $emaLong = 60, float $filterPct = 0.005)
     {
         if ($emaShort <= 0 || $emaLong <= 0 || $emaShort >= $emaLong) {
             throw new \InvalidArgumentException(

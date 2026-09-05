@@ -119,7 +119,9 @@ return [
 
         'WmcStrategy' => [
             'class'     => \App\Services\Trader\Strategies\WmcStrategy::class,
-            'construct' => [20, 50, 0.003],
+            // 参数经 SKR/USDT:SWAP 15m 30天数据网格寻优（12/60/0.005）；
+            // 风控（止损1.5% + 宽ROI阶梯）在策略类 protected 属性中
+            'construct' => [12, 60, 0.005],
         ],
     ],
 ];
