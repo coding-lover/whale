@@ -66,19 +66,17 @@ alwaysApply: true
 - 热点数据读 Redis 缓存，设置 TTL + 防击穿
 - 连接池复用 DB/Redis，用完释放
 
-## 11. 数据访问分层（强制）
-- 应用层固定链路：`Controller / Command / Task / Process → Service → Model`，**严禁跨层**
-- 本系统**不设 Repository / DAO 层**：禁止新建 `app/Repositories`、`app/Dao` 等目录或类；数据访问代码直接写在 Service 中
-- **Service 是数据库操作的唯一出口**：
-  - 所有 Eloquent 调用（`Model::find() / where() / create() / update() / delete()`、关联预加载、`DB::transaction()`、原生查询）只能出现在 `app/Services/` 下
-  - Model 是无状态数据层，Service 中直接用其静态方法（`Backtest::query()`、`BacktestTrade::create()`），Model 不走容器注入
-  - Service 本身必须走容器（第 4 节），由上层构造/方法注入使用
-- **Controller / Command / Task / Process / Hook 的边界**：
-  - 只做：HTTP 入参校验与提取、调用一个或多个 Service、组装 HTTP/CLI 响应
-  - 禁止 `use App\Models\*`，禁止 `DB::` / `Capsule::` / `Model::xxx()` 等任何持久化代码
-- **Model 层职责**（`app/Models`）：只声明表结构（`$table` / `$fillable` / `$casts`）、关联关系、查询作用域 scope、访问器/修改器；不写业务流程与事务编排
-- Service 之间允许同层调用以复用逻辑，但禁止循环依赖（第 3 节红线）
-- 表结构变更一律走 `database/migrations/*.sql`，禁止在 Model 或业务代码中做 schema 变更
+## 11. 数据访问分层与生命周期（强制）
+- 固定链路：`Controller / Command / Task / Process → Service → Model`，**严禁跨层**
+- **不设 Repository / DAO 层**，禁止新建 `app/Repositories`、`app/Dao`
+- **Controller / Service 均由容器解析，Worker 内单例复用**（跨请求、跨协程共享），**必须无状态**：
+  - 实例属性只允许持有协程安全的协作者（Config / Logger / 连接池 / Manager 等）
+  - 请求态数据（Request、当前用户、本次业务 DTO）只能通过**方法参数**传递，禁止写入实例属性或 static 属性
+- **Service 是数据库操作的唯一出口**：Eloquent 调用、`DB::transaction()`、原生查询只能出现在 `app/Services/` 下；Service 中直接用 Model 静态方法（`Backtest::query()`），Model 不走容器注入
+- **Controller / Command / Task / Process / Hook**：只做入参校验、调 Service、组装响应；禁止 `use App\Models\*`、`DB::`、`Model::xxx()`
+- **Model**（`app/Models`）：只声明 `$table` / `$fillable` / `$casts`、关联、scope、访问器/修改器；不写业务流程与事务
+- Service 之间允许同层调用，但禁止循环依赖（第 3 节红线）
+- 表结构变更走 `database/migrations/*.sql`，禁止在代码中做 schema 变更
 - 正确示例：
   ```php
   // Controller：只注入并调用 Service
