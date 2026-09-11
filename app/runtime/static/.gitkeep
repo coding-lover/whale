@@ -1,0 +1,10 @@
+# 此目录用于存放运行时依赖的静态数据（不会随每次运行变更的种子数据）。
+#
+# 典型内容示例：
+#   - quote_currencies.json     SymbolFormatter 的报价货币白名单
+#   - trading_pair_map.csv      内部标准 pair → 交易所原生 symbol 映射（特殊场景用）
+#   - holidays.json             7*24 加密市场一般为空；若接入股票/期货则配置休市日历
+#   - seed_ohlcv/               策略 demo 用的固定样本 K 线（体积 < 5MB 可直接入库）
+#
+# ⚠️ 注意：本目录是「运行时依赖的输入」。
+#  不要把运行时「输出」写到这里（例如回测结果 → 应该放在 trader/output/）。

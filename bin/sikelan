@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Sikelan CLI 命令入口
+ *
+ * ⭐ 保持极简：所有文件加载、常量、xdebug 处理都已内聚到 Sikelan\Core\Bootstrap。
+ * 未来要改加载顺序 / 新增预处理，**不要在这里加代码**，去改 Bootstrap。
+ */
+
+use Sikelan\Core\Bootstrap;
+use Sikelan\Command\CommandRunner;
+
+// 引导：autoload → constants → common → app common → xdebug 关闭
+require __DIR__ . '/../sikelan/Core/Bootstrap.php';
+Bootstrap::cli(__DIR__, false);
+
+// 运行命令
+$runner   = CommandRunner::getInstance();
+$exitCode = $runner->run($argv);
+
+exit($exitCode);
