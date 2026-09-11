@@ -300,9 +300,9 @@ class SymbolParseTest extends TestCase
                 $parsed->getResolvedDeliveryDate(),
                 "Date mismatch for {$standard}"
             );
-            // 关键断言：__toString() 输出必须还是 :THIS_WEEK / :QUARTER 这种别名形式
+            // 关键断言：归一化后的别名（撞期窗口 QUARTER 可能就近规范为 THIS/NEXT_WEEK，属预期）
             $this->assertEquals(
-                $standard,
+                $this->canonicalPeriodSymbol($standard),
                 (string) $parsed,
                 "Period alias round trip failed: {$standard} -> {$native} -> " . (string) $parsed
             );
@@ -334,7 +334,7 @@ class SymbolParseTest extends TestCase
                 "Date mismatch for {$standard}"
             );
             $this->assertEquals(
-                $standard,
+                $this->canonicalPeriodSymbol($standard),
                 (string) $parsed,
                 "Binance period alias round trip failed: {$standard} -> {$native} -> " . (string) $parsed
             );
@@ -455,15 +455,15 @@ class SymbolParseTest extends TestCase
         $s1 = $formatter->parseExchangeSymbol("BTCUSDT_{$twDate}");
         $this->assertEquals('BTC/USDT:THIS_WEEK', (string) $s1);
 
-        // 2. quarter 的实际日期 → 归一为 QUARTER
+        // 2. quarter 的实际日期 → 归一为 QUARTER（撞期窗口可能就近为 THIS/NEXT_WEEK）
         $qDate = (new TradingSymbol('ETH', 'BUSD', TradingSymbol::TYPE_FUTURES, null, TradingSymbol::PERIOD_QUARTER))->getResolvedDeliveryDate();
         $s2 = $formatter->parseExchangeSymbol("ETHBUSD_{$qDate}");
-        $this->assertEquals('ETH/BUSD:QUARTER', (string) $s2);
+        $this->assertEquals($this->canonicalPeriodSymbol('ETH/BUSD:QUARTER'), (string) $s2);
 
-        // 3. 币本位交割 BTCUSD_quarter_date → 归一为 QUARTER
+        // 3. 币本位交割 BTCUSD_quarter_date → 归一为 QUARTER（撞期同上）
         $coinQDate = (new TradingSymbol('BTC', 'USD', TradingSymbol::TYPE_FUTURES, null, TradingSymbol::PERIOD_QUARTER))->getResolvedDeliveryDate();
         $s3 = $formatter->parseExchangeSymbol("BTCUSD_{$coinQDate}");
-        $this->assertEquals('BTC/USD:QUARTER', (string) $s3);
+        $this->assertEquals($this->canonicalPeriodSymbol('BTC/USD:QUARTER'), (string) $s3);
         $this->assertTrue($s3->isFutures());
 
         // 4. 非别名日期（8月周一） → 保持显式
@@ -526,10 +526,10 @@ class SymbolParseTest extends TestCase
         $s2 = $formatter->parseExchangeSymbol('ETH-BTC-20260831');
         $this->assertEquals('ETH/BTC:FUT-20260831', (string) $s2);
 
-        // 币本位交割 → 归一化 quarter
+        // 币本位交割 → 归一化 quarter（撞期窗口可能就近为 THIS/NEXT_WEEK）
         $qDate = (new TradingSymbol('SOL', 'USD', TradingSymbol::TYPE_FUTURES, null, TradingSymbol::PERIOD_QUARTER))->getResolvedDeliveryDate();
         $s3 = $formatter->parseExchangeSymbol("SOL-USD-{$qDate}");
-        $this->assertEquals('SOL/USD:QUARTER', (string) $s3);
+        $this->assertEquals($this->canonicalPeriodSymbol('SOL/USD:QUARTER'), (string) $s3);
 
         // 5 种周期别名完整往返（OKX）
         $periods = [
@@ -544,7 +544,7 @@ class SymbolParseTest extends TestCase
             $native = $formatter->format($original);
             $parsed = $formatter->parseExchangeSymbol($native);
             $this->assertEquals(
-                $standard,
+                $this->canonicalPeriodSymbol($standard),
                 (string) $parsed,
                 "OKX full period round-trip failed: {$standard} -> {$native} -> " . (string) $parsed
             );
@@ -674,5 +674,41 @@ class SymbolParseTest extends TestCase
         // 空字符串
         $this->expectException(\InvalidArgumentException::class);
         $formatter->parseExchangeSymbol('   ');
+    }
+
+    /**
+     * 计算交割周期别名在当前时点经"交易所原生往返"后应得到的规范别名
+     *
+     * 季度末月最后一个周五可能恰好等于本周/下周五（季末前一两周的撞期窗口），
+     * 此时同一个原生交割日同时对应两个别名。TradingSymbol::normalizeToPeriodAlias()
+     * 按 this_week → next_week → quarter → bi_quarter → ci_quarter 的"就近优先"
+     * 顺序归一化（生产代码明确设计），因此撞期时 :QUARTER 往返后会规范成更小周期，
+     * 属于预期行为。本方法让测试预期与该规则一致，保证任意日期都可重复通过。
+     *
+     * @param string $standard 标准周期别名字符串，如 ETH/BUSD:QUARTER
+     * @return string 往返后应得到的规范标准字符串
+     */
+    private function canonicalPeriodSymbol(string $standard): string
+    {
+        $symbol = TradingSymbol::parse($standard);
+        $targetDate = $symbol->getResolvedDeliveryDate();
+
+        // 与 normalizeToPeriodAlias() 完全一致的就近优先匹配顺序
+        $periodOrder = [
+            TradingSymbol::PERIOD_THIS_WEEK,
+            TradingSymbol::PERIOD_NEXT_WEEK,
+            TradingSymbol::PERIOD_QUARTER,
+            TradingSymbol::PERIOD_BI_QUARTER,
+            TradingSymbol::PERIOD_CI_QUARTER,
+        ];
+
+        foreach ($periodOrder as $period) {
+            if ($symbol->resolveDeliveryDate($period) === $targetDate) {
+                return $symbol->getBase() . '/' . $symbol->getQuote()
+                    . ':' . strtoupper($period);
+            }
+        }
+
+        return $standard;
     }
 }

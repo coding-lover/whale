@@ -63,6 +63,7 @@ class IndexController
             'message' => 'Welcome to QuantTrade',
             'method' => $request->getMethod(),
             'uri' => $request->getUri()->getPath(),
+            'ticker' => $ticker,
             'test' => $realSymbol,
             'val' => $val,
             'html' => '<a>' . $realSymbol . '</a>',
