@@ -106,4 +106,126 @@ PHP;
         // show/update/destroy 应使用 $request->getInt('id')
         $this->assertStringContainsString("\$request->getInt('id')", $code);
     }
+
+    /**
+     * 控制器删除重建场景：旧路由以小写类名 test1Controller 写入（PHP 类名大小写不敏感），
+     * 重建 Test1Controller 后应整体替换，不残留旧路由（历史重复路由 bug 回归）。
+     */
+    public function testUpdateRouterReplacesStaleCaseVariantRoutes()
+    {
+        $routerContent = <<<'PHP'
+<?php
+
+return [
+    [
+        'method' => 'GET',
+        'path' => '/api/test1s',
+        'handler' => 'App\Controllers\test1Controller@index',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/users',
+        'handler' => 'App\Controllers\UserController@index',
+    ],
+];
+PHP;
+        file_put_contents($this->routerFile, $routerContent);
+
+        $cmd = new MakeControllerCommand();
+        $method = new \ReflectionMethod($cmd, 'updateRouter');
+        $method->setAccessible(true);
+        // 大小写不同的同一控制器，无 method+path 冲突 → 静默替换
+        $method->invoke($cmd, 'Test1Controller');
+
+        $result = file_get_contents($this->routerFile);
+
+        // 旧的小写/复数路径路由应被替换，不残留
+        $this->assertStringNotContainsString('test1s', $result);
+        // 新路由恰好 5 条，且以数字结尾的资源名不加 s（/api/test1）
+        $this->assertSame(5, substr_count($result, 'Test1Controller'));
+        $this->assertStringContainsString("'path' => '/api/test1',", $result);
+        // 其他控制器的路由不受影响
+        $this->assertStringContainsString('UserController@index', $result);
+
+        exec('php -l ' . escapeshellarg($this->routerFile) . ' 2>&1', $lintOut, $lintCode);
+        $this->assertEquals(0, $lintCode, 'router.php 语法错误: ' . implode("\n", $lintOut));
+    }
+
+    /**
+     * method+path 去重 key 检测：同 key 但 handler 不同 → 识别为冲突。
+     */
+    public function testFindRouteConflictsDetectsForeignHandlerOnSamePath()
+    {
+        $content = <<<'PHP'
+<?php
+
+return [
+    [
+        'method' => 'GET',
+        'path' => '/api/articles',
+        'handler' => 'App\Controllers\PostController@index',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/users',
+        'handler' => 'App\Controllers\UserController@index',
+    ],
+];
+PHP;
+        $cmd = new MakeControllerCommand();
+        $method = new \ReflectionMethod($cmd, 'findRouteConflicts');
+        $method->setAccessible(true);
+
+        $newRoutes = [
+            ['method' => 'GET', 'path' => '/api/articles', 'handler' => 'App\\Controllers\\ArticleController@index'],
+            ['method' => 'GET', 'path' => '/api/users', 'handler' => 'App\\Controllers\\UserController@index'],
+        ];
+        $conflicts = $method->invoke($cmd, $content, $newRoutes);
+
+        // 仅 /api/articles 冲突（PostController 占用）；/api/users 是自身旧路由，不算冲突
+        $this->assertCount(1, $conflicts);
+        $this->assertSame('GET /api/articles', $conflicts[0]['key']);
+        $this->assertSame('App\Controllers\PostController@index', $conflicts[0]['existing']['handler']);
+    }
+
+    /**
+     * -y（autoYes）：检测到冲突时跳过交互确认，直接覆盖移除冲突条目。
+     */
+    public function testUpdateRouterWithAutoYesOverwritesForeignConflicts()
+    {
+        $routerContent = <<<'PHP'
+<?php
+
+return [
+    [
+        'method' => 'GET',
+        'path' => '/api/articles',
+        'handler' => 'App\Controllers\PostController@index',
+    ],
+];
+PHP;
+        file_put_contents($this->routerFile, $routerContent);
+
+        $cmd = new MakeControllerCommand();
+        $method = new \ReflectionMethod($cmd, 'updateRouter');
+        $method->setAccessible(true);
+        $method->invoke($cmd, 'ArticleController', true);
+
+        $result = file_get_contents($this->routerFile);
+
+        // 冲突的 PostController 条目应被覆盖移除，不再重复注册 GET /api/articles
+        $this->assertStringNotContainsString('PostController', $result);
+        $this->assertSame(5, substr_count($result, 'ArticleController'));
+
+        // 核心：所有路由的 method+path key 必须唯一（index/store 共用 /api/articles 属正常）
+        $routes = require $this->routerFile;
+        $keys = [];
+        foreach ($routes as $r) {
+            $keys[] = strtoupper($r['method']) . ' ' . $r['path'];
+        }
+        $this->assertSame(count($keys), count(array_unique($keys)), '存在重复注册的路由: ' . implode(', ', $keys));
+
+        exec('php -l ' . escapeshellarg($this->routerFile) . ' 2>&1', $lintOut, $lintCode);
+        $this->assertEquals(0, $lintCode, 'router.php 语法错误: ' . implode("\n", $lintOut));
+    }
 }

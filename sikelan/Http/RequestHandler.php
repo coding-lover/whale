@@ -201,19 +201,22 @@ class RequestHandler
 
     /**
      * 发送 404 响应
+     *
+     * HTTP 状态码恒为 200，业务码 CODE_NOT_FOUND（1404）
      */
     protected function sendNotFound(SwooleResponse $response): void
     {
-        $resp = (new Response(404))->withJson([
-            'code' => 404,
-            'message' => 'Not Found',
-            'data' => null,
-        ])->withSecurityHeaders();
+        $resp = (new Response())
+            ->err('Not Found', Response::CODE_NOT_FOUND)
+            ->withSecurityHeaders();
         $resp->send($response);
     }
 
     /**
      * 处理异常
+     *
+     * HTTP 状态码恒为 200，业务码 CODE_SERVER_ERROR（1500）；
+     * 异常详情仅写日志，不向客户端透传（防止敏感信息泄漏）
      */
     protected function handleException(SwooleResponse $response, \Throwable $e): void
     {
@@ -221,11 +224,9 @@ class RequestHandler
             'trace' => $e->getTraceAsString()
         ]);
 
-        $resp = (new Response(500))->withJson([
-            'code' => 500,
-            'message' => 'Internal Server Error',
-            'data' => null,
-        ])->withSecurityHeaders();
+        $resp = (new Response())
+            ->err('Internal Server Error', Response::CODE_SERVER_ERROR)
+            ->withSecurityHeaders();
         $resp->send($response);
     }
 }

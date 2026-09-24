@@ -3,15 +3,16 @@
 namespace Sikelan\Command\DefaultCommand;
 
 use Sikelan\Command\CommandInterface;
+use Sikelan\Command\RouteUpdaterTrait;
 
 class RouteCommand implements CommandInterface
 {
-    protected string $routerFile;
+    use RouteUpdaterTrait;
+
     protected string $controllerDir;
 
     public function __construct()
     {
-        $this->routerFile = CONFIG_PATH . '/router.php';
         $this->controllerDir = APP_PATH . '/Controllers';
     }
 
@@ -48,8 +49,8 @@ class RouteCommand implements CommandInterface
             return "\033[31m错误: 控制器 '{$controllerName}' 不存在。\033[0m\n路径: {$filePath}";
         }
 
-        if (!file_exists($this->routerFile)) {
-            return "\033[31m错误: 路由配置文件不存在。\033[0m\n路径: {$this->routerFile}";
+        if (!$this->routerFileExists()) {
+            return "\033[31m错误: 路由配置文件不存在。\033[0m\n路径: {$this->getRouterFile()}";
         }
 
         $methods = $this->getControllerMethods($filePath, $methodFilter);
@@ -58,21 +59,24 @@ class RouteCommand implements CommandInterface
         }
 
         $resourceName = $this->deriveResourceName($controllerName);
-        $className = "App\\Controllers\\{$controllerName}";
+        $className = $this->buildControllerClassName($controllerName);
 
         $newRoutes = $this->buildRouteEntries($className, $resourceName, $methods);
-        $oldContent = file_get_contents($this->routerFile);
+        $oldContent = $this->readRouterContent();
 
         // 提取该控制器已有的路由
         $oldRoutes = $this->extractControllerRoutes($oldContent, $className);
 
+        // 以 method+path 为 key 检测与其他 handler 的路径冲突
+        $conflicts = $this->findRouteConflicts($oldContent, $newRoutes);
+
         if (!$force) {
-            return $this->showDiff($controllerName, $oldRoutes, $newRoutes);
+            return $this->showDiff($controllerName, $oldRoutes, $newRoutes, $conflicts);
         }
 
-        // 执行更新
-        $newContent = $this->applyRouteUpdate($oldContent, $className, $newRoutes);
-        file_put_contents($this->routerFile, $newContent);
+        // 执行更新：用新路由替换旧路由并写盘
+        $newContent = $this->replaceControllerRoutes($oldContent, $className, $newRoutes);
+        $this->writeRouterContent($newContent);
 
         $addedCount = count($newRoutes);
         $removedCount = count($oldRoutes);
@@ -80,7 +84,7 @@ class RouteCommand implements CommandInterface
             "  控制器: {$controllerName}\n" .
             "  移除旧路由: {$removedCount} 条\n" .
             "  生成新路由: {$addedCount} 条\n" .
-            "  配置文件: {$this->routerFile}";
+            "  配置文件: {$this->getRouterFile()}";
     }
 
     public function help(array $args): ?string
@@ -125,9 +129,19 @@ HELP;
 
         $reflection = new \ReflectionClass($className);
         $methods = [];
+        // 收集当前类 + 所有祖先类名（子类继承父类的 CRUD 方法也能生成路由）
+        $ancestorNames = [$className => true];
+        $parent = $reflection->getParentClass();
+        while ($parent) {
+            $ancestorNames[$parent->getName()] = true;
+            $parent = $parent->getParentClass();
+        }
 
         foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
-            if ($method->getDeclaringClass()->getName() !== $className) {
+            // 只保留当前类及其祖先类（含 Sikelan 命名空间）声明的方法，
+            // 排除来自 PHP 内部类（如 abstract Controller）的方法
+            $declaringName = $method->getDeclaringClass()->getName();
+            if (!isset($ancestorNames[$declaringName]) && strpos($declaringName, 'Sikelan\\') !== 0) {
                 continue;
             }
 
@@ -150,94 +164,9 @@ HELP;
     }
 
     /**
-     * 从控制器名派生资源名 (UserController → users)
-     */
-    protected function deriveResourceName(string $controllerName): string
-    {
-        $baseName = str_replace('Controller', '', $controllerName);
-        $lowerName = strtolower($baseName);
-
-        // 简单复数规则
-        $endings = ['s', 'x', 'z', 'ch', 'sh'];
-        foreach ($endings as $ending) {
-            if (substr($lowerName, -strlen($ending)) === $ending) {
-                return $lowerName . 'es';
-            }
-        }
-        if (substr($lowerName, -1) === 'y') {
-            return substr($lowerName, 0, -1) . 'ies';
-        }
-        return $lowerName . 's';
-    }
-
-    /**
-     * 根据控制器方法生成路由配置条目
-     */
-    protected function buildRouteEntries(string $className, string $resourceName, array $methods): array
-    {
-        $entries = [];
-
-        foreach ($methods as $method) {
-            $route = $this->mapMethodToRoute($method, $resourceName);
-            $route['handler'] = "{$className}@{$method}";
-            $entries[] = $route;
-        }
-
-        return $entries;
-    }
-
-    /**
-     * 将方法名映射为 RESTful 路由
-     */
-    protected function mapMethodToRoute(string $method, string $resourceName): array
-    {
-        $basePath = "/api/{$resourceName}";
-
-        // 标准 CRUD 映射
-        $map = [
-            'index'   => ['method' => 'GET',    'path' => $basePath],
-            'show'    => ['method' => 'GET',    'path' => $basePath . '/{id}'],
-            'store'   => ['method' => 'POST',   'path' => $basePath],
-            'update'  => ['method' => 'PUT',    'path' => $basePath . '/{id}'],
-            'destroy' => ['method' => 'DELETE', 'path' => $basePath . '/{id}'],
-            'create'  => ['method' => 'GET',    'path' => $basePath . '/create'],
-            'edit'    => ['method' => 'GET',    'path' => $basePath . '/{id}/edit'],
-        ];
-
-        if (isset($map[$method])) {
-            return $map[$method];
-        }
-
-        // 自定义方法: GET /api/{resource}/{methodName}
-        return ['method' => 'GET', 'path' => $basePath . '/' . $method];
-    }
-
-    /**
-     * 从路由配置文件中提取指定控制器的路由
-     */
-    protected function extractControllerRoutes(string $content, string $className): array
-    {
-        $escapedClass = preg_quote($className, '/');
-        $pattern = "/\s*\[\s*'method'\s*=>\s*'([^']+)'\s*,\s*'path'\s*=>\s*'([^']+)'\s*,\s*'handler'\s*=>\s*'{$escapedClass}@([^']+)'\s*\]/s";
-
-        $routes = [];
-        if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $match) {
-                $routes[] = [
-                    'method'  => $match[1],
-                    'path'    => $match[2],
-                    'handler' => $match[0], // 保存原始匹配文本
-                ];
-            }
-        }
-
-        return $routes;
-    }
-
-    /**
      * 显示变更预览
      */
-    protected function showDiff(string $controllerName, array $oldRoutes, array $newRoutes): string
+    protected function showDiff(string $controllerName, array $oldRoutes, array $newRoutes, array $conflicts = []): string
     {
         $output = "\033[36m=== 路由变更预览 ===\033[0m\n\n";
         $output .= "控制器: \033[33m{$controllerName}\033[0m\n\n";
@@ -257,39 +186,15 @@ HELP;
             $output .= "  \033[32m+ {$route['method']} {$route['path']} → {$route['handler']}\033[0m\n";
         }
 
-        $output .= "\n\033[33m使用 -f 或 --force 选项确认更新。\033[0m";
-        return $output;
-    }
-
-    /**
-     * 应用路由更新到配置文件
-     */
-    protected function applyRouteUpdate(string $content, string $className, array $newRoutes): string
-    {
-        $escapedClass = preg_quote($className, '/');
-
-        // 移除旧路由块
-        $pattern = "/\s*\[\s*'method'\s*=>\s*'[^']+'\s*,\s*'path'\s*=>\s*'[^']+'\s*,\s*'handler'\s*=>\s*'{$escapedClass}@[^']+'\s*\],?\s*/s";
-        $content = preg_replace($pattern, '', $content);
-
-        // 构造新路由块
-        $newBlock = "\n";
-        foreach ($newRoutes as $route) {
-            $newBlock .= "    [\n";
-            $newBlock .= "        'method' => '{$route['method']}',\n";
-            $newBlock .= "        'path' => '{$route['path']}',\n";
-            $newBlock .= "        'handler' => '{$route['handler']}',\n";
-            $newBlock .= "    ],\n";
+        // 冲突警告：这些 method+path 已被其他 handler 占用，-f 覆盖时会一并移除
+        if (!empty($conflicts)) {
+            $output .= "\n\033[31m⚠ 路径冲突（以下 method + path 已被其他 handler 占用，-f 覆盖时将移除）:\033[0m\n";
+            foreach ($conflicts as $c) {
+                $output .= "  \033[31m{$c['key']}  现有: {$c['existing']['handler']} → 覆盖为: {$c['new']['handler']}\033[0m\n";
+            }
         }
 
-        // 在 return [ 之后插入新路由
-        $content = preg_replace(
-            '/return \[/',
-            "return [{$newBlock}",
-            $content,
-            1
-        );
-
-        return $content;
+        $output .= "\n\033[33m使用 -f 或 --force 选项确认更新。\033[0m";
+        return $output;
     }
 }

@@ -20,6 +20,25 @@ class Response implements ResponseInterface
         | JSON_HEX_QUOT
         | JSON_HEX_AMP;
 
+    /**
+     * 业务状态码常量（HTTP 状态码恒为 200，业务码用此区分）
+     *
+     * 编号约定：1XXX 段（与 HTTP 状态码区分，避免业务码 404 与 HTTP 404 混淆）。
+     * 调用方也可自定义 code，只要保证非 0 即为失败。
+     *
+     * 用法：
+     *   return (new Response())->ret($data);
+     *   return (new Response())->err('Not Found', Response::CODE_NOT_FOUND);
+     */
+    public const CODE_OK            = 0;     // 成功
+    public const CODE_ERROR         = 1;     // 通用失败（默认）
+    public const CODE_BAD_REQUEST   = 1400;  // 参数错误
+    public const CODE_UNAUTHORIZED  = 1401;  // 未认证
+    public const CODE_FORBIDDEN      = 1403;  // 禁止访问
+    public const CODE_NOT_FOUND     = 1404;   // 资源不存在
+    public const CODE_VALIDATION    = 1422;  // 验证失败
+    public const CODE_SERVER_ERROR  = 1500;  // 服务器内部错误
+
     protected $statusCode = 200;
     protected $reasonPhrase = 'OK';
     protected $headers = [];
@@ -226,9 +245,39 @@ class Response implements ResponseInterface
 
     public function withRedirect($url, int $status = 302)
     {
-        $new = clone $this->withStatus($status);
+        $new = $this->withStatus($status);
         $new->headers['Location'] = [$url];
         return $new;
+    }
+
+    /**
+     * 统一成功响应（HTTP 状态码恒为 200）
+     *
+     * 输出结构：{"code":0,"message":"","data":<data>, ...extra}
+     *
+     * @param array $data  业务数据，置于 data 字段下
+     * @param array $extra 顶层附加字段（如 pagination、count）；不可包含 code/message/data 保留键
+     *                     ——即使包含也会被基础三字段覆盖（用 + 合并，前者优先）
+     */
+    public function ret(array $data = [], array $extra = []): self
+    {
+        $payload = ['code' => self::CODE_OK, 'message' => '', 'data' => $data] + $extra;
+        return (new self(200))->withJson($payload);
+    }
+
+    /**
+     * 统一失败响应（HTTP 状态码恒为 200）
+     *
+     * 输出结构：{"code":<code>,"message":<message>,"data":null, ...extra}
+     *
+     * @param string $message 异常信息
+     * @param int    $code    业务状态码（非 0），默认 CODE_ERROR；推荐用 CODE_* 常量
+     * @param array  $extra   顶层附加字段（如 errors、trace）
+     */
+    public function err(string $message, int $code = self::CODE_ERROR, array $extra = []): self
+    {
+        $payload = ['code' => $code, 'message' => $message, 'data' => null] + $extra;
+        return (new self(200))->withJson($payload);
     }
 
     public function send(\Swoole\Http\Response $swooleResponse)

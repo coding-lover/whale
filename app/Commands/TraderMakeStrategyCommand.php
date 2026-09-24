@@ -2,13 +2,17 @@
 
 namespace App\Commands;
 
+use App\Services\Trader\StrategySyncService;
 use Sikelan\Command\CommandInterface;
 use Sikelan\Command\CommandManager;
+use Sikelan\Command\FileOverwriteGuard;
+use Sikelan\Framework;
 
 /**
  * 命令：trader:make-strategy
  *
- * 一行创建策略：生成策略类文件 + 自动注册到 config/trader.php 的 strategies 注册表。
+ * 一行创建策略：生成策略类文件 + 自动注册到 config/trader.php 的 strategies 注册表
+ * + 同步写入 strategies 表（可用 --no-db 关闭）。
  *
  * ⭐ 最简用法（只给策略别名，类名自动生成 = 别名 + 'Strategy'）：
  *      php bin/sikelan trader:make-strategy --name=MyStrat
@@ -23,6 +27,8 @@ use Sikelan\Command\CommandManager;
  */
 class TraderMakeStrategyCommand implements CommandInterface
 {
+    use FileOverwriteGuard;
+
     /** 默认策略目录（相对 APP_PATH） */
     protected const DEFAULT_STRATEGY_DIR = 'Services/Trader/Strategies';
 
@@ -74,28 +80,38 @@ class TraderMakeStrategyCommand implements CommandInterface
                 return $this->error($error);
             }
 
-            // 目标文件已存在？
-            if (is_file($plan['file_path']) && !$plan['force']) {
-                return $this->warn("策略文件已存在：{$plan['file_path']}\n使用 --force 覆盖，或换一个 --name。");
-            }
-
             // --dry-run：只展示计划
             if ($plan['dry_run']) {
                 return $this->formatDryRun($plan);
             }
 
-            // 1) 写策略类文件
-            $this->writeStrategyFile($plan);
-
-            // 2) 注册到 config/trader.php
-            if (!$plan['no_register']) {
-                $this->registerInConfig($plan['config_path'], $plan['alias'], $plan['full_class'], $plan['construct']);
+            // 1) 写策略类文件（带安全门禁：检测手工修改，-f 覆盖前自动备份）
+            $guard = $this->writeStrategyFile($plan);
+            if ($guard['status'] === 'rejected') {
+                return $this->warn("策略文件已存在且与模板不一致。\n{$guard['message']}");
             }
 
-            // 3) 语法校验（php -l）
-            $lintOk = $this->lintFile($plan['file_path']);
+            // 2) 注册到 config/trader.php
+            //    幂等：重复执行（unchanged / overwritten）且别名已存在时跳过，不再抛"别名已存在"
+            if (!$plan['no_register']) {
+                if ($guard['status'] === 'created'
+                    || !$this->aliasExistsInConfig($plan['config_path'], $plan['alias'])
+                ) {
+                    $this->registerInConfig($plan['config_path'], $plan['alias'], $plan['full_class'], $plan['construct']);
+                }
+            }
 
-            return $this->formatSuccess($plan, $lintOk);
+            // 3) 写入 strategies 表（best effort：DB 不可用只警告，文件/config 已生成）
+            //    --no-register 时默认也跳过入库；可用 --no-db 显式关闭
+            $dbResult = null;
+            if (!$plan['no_register'] && !$plan['no_db']) {
+                $dbResult = $this->persistToDb($plan);
+            }
+
+            // 4) 语法校验（php -l）；unchanged 时文件未改动，跳过重复校验
+            $lintOk = $guard['status'] === 'unchanged' ? true : $this->lintFile($plan['file_path']);
+
+            return $this->formatSuccess($plan, $lintOk, $dbResult, $guard);
         } catch (\Throwable $e) {
             return $this->error($e->getMessage());
         }
@@ -116,6 +132,8 @@ class TraderMakeStrategyCommand implements CommandInterface
             'template'    => (string) ($cmd->getOpt('--template', (string) getenv('STRATEGY_TEMPLATE')) ?: 'ema'),
             'params'      => (string) $cmd->getOpt('--params', ''),
             'no_register' => $cmd->getOpt('--no-register', null) !== null,
+            'no_db'       => $cmd->getOpt('--no-db', null) !== null,
+            'no_backup'   => $cmd->getOpt('--no-backup', null) !== null,
             'force'       => $cmd->getOpt('--force', null) !== null || $cmd->getOpt('-f', null) !== null,
             'dry_run'     => $cmd->getOpt('--dry-run', null) !== null,
             'config_path' => (string) ($cmd->getOpt('--config', '') ?: (
@@ -185,8 +203,10 @@ class TraderMakeStrategyCommand implements CommandInterface
             'template'      => $template,
             'construct'     => $construct,
             'param_warn'    => $paramWarn,
-            'no_register'   => (bool) $raw['no_register'],
-            'force'         => (bool) $raw['force'],
+            'no_register'   => (bool) ($raw['no_register'] ?? false),
+            'no_db'         => (bool) ($raw['no_db'] ?? false),
+            'no_backup'     => (bool) ($raw['no_backup'] ?? false),
+            'force'         => (bool) ($raw['force'] ?? false),
             'dry_run'       => (bool) $raw['dry_run'],
             'config_path'   => (string) $raw['config_path'],
         ], null];
@@ -279,13 +299,37 @@ class TraderMakeStrategyCommand implements CommandInterface
     //  文件生成
     // ========================================================================
 
-    protected function writeStrategyFile(array $plan): void
+    /**
+     * 渲染模板并通过安全门禁写入文件。
+     *
+     * @param array<string, mixed> $plan
+     * @return array{status:string, backup:?string, added:int, removed:int, message:?string}
+     */
+    protected function writeStrategyFile(array $plan): array
     {
-        if (!is_dir($plan['dir'])) {
-            mkdir($plan['dir'], 0755, true);
-        }
         $code = $this->renderTemplate($plan['template'], $plan['namespace'], $plan['class']);
-        file_put_contents($plan['file_path'], $code);
+        return $this->guardWrite(
+            (string) $plan['file_path'],
+            $code,
+            (bool) $plan['force'],
+            empty($plan['no_backup'])
+        );
+    }
+
+    /**
+     * 检测策略别名是否已存在于 config/trader.php（用于注册幂等判断）。
+     *
+     * 匹配 'Alias' => 或 "Alias" => 形式的数组 key；别名在 buildPlan 已做合法字符校验，
+     * 无注入风险。registerInConfig() 内部的 token 扫描仍是写盘前的权威校验。
+     */
+    protected function aliasExistsInConfig(string $configPath, string $alias): bool
+    {
+        if (!is_file($configPath)) {
+            return false;
+        }
+        $content = (string) file_get_contents($configPath);
+        return strpos($content, "'{$alias}' =>") !== false
+            || strpos($content, "\"{$alias}\" =>") !== false;
     }
 
     /**
@@ -797,6 +841,38 @@ PHP;
     }
 
     // ========================================================================
+    //  strategies 表入库
+    // ========================================================================
+
+    /**
+     * 把新策略 upsert 到 strategies 表（best effort：失败不阻断文件/config 流程）。
+     *
+     * @param array<string, mixed> $plan 执行计划
+     * @return array{0:bool, 1:string} [是否成功, created|updated|unchanged 或失败原因]
+     */
+    protected function persistToDb(array $plan): array
+    {
+        try {
+            // CLI 入口里 Framework 可能尚未引导；getInstance() 会完成 Eloquent boot
+            Framework::getInstance();
+
+            $result = app(StrategySyncService::class)->upsertEntry(
+                (string) $plan['alias'],
+                (string) $plan['full_class'],
+                (array) $plan['construct'],
+                // 新生成的类文件尚未进入 composer autoload，显式告知路径
+                ['file_path' => (string) $plan['file_path']]
+            );
+            if (strpos($result, 'skipped:') === 0) {
+                return [false, substr($result, strlen('skipped:'))];
+            }
+            return [true, $result];
+        } catch (\Throwable $e) {
+            return [false, $e->getMessage()];
+        }
+    }
+
+    // ========================================================================
     //  语法校验 / 输出
     // ========================================================================
 
@@ -821,6 +897,7 @@ PHP;
         $out .= "  模板            {$plan['template']}\n";
         $out .= "  构造参数        " . json_encode($plan['construct'], JSON_UNESCAPED_UNICODE) . "\n";
         $out .= "  注册到 config   " . ($plan['no_register'] ? '否（--no-register）' : $plan['config_path']) . "\n";
+        $out .= "  写入数据库      " . ($plan['no_register'] || $plan['no_db'] ? '否' : '是（strategies 表）') . "\n";
         $out .= "  覆盖已存在      " . ($plan['force'] ? '是' : '否') . "\n";
         if ($plan['param_warn'] !== null) {
             $out .= "\n" . $this->warn($plan['param_warn']) . "\n";
@@ -828,10 +905,23 @@ PHP;
         return $out;
     }
 
-    /** 成功输出 */
-    protected function formatSuccess(array $plan, bool $lintOk): string
+    /**
+     * 成功输出。
+     *
+     * @param array<string, mixed>         $plan
+     * @param bool                         $lintOk
+     * @param array{0:bool,1:string}|null  $dbResult [是否成功, 结果/原因]，null=本次未尝试入库
+     * @param array<string, mixed>         $guard    guardWrite 返回的门禁结果
+     */
+    protected function formatSuccess(array $plan, bool $lintOk, ?array $dbResult = null, array $guard = []): string
     {
-        $out = "\n" . $this->info("策略创建成功：{$plan['alias']}") . "\n";
+        $titleMap = [
+            'created'     => '策略创建成功：',
+            'overwritten' => '策略已覆盖重新生成：',
+            'unchanged'   => '策略无变化（文件与模板一致）：',
+        ];
+        $titlePrefix = $titleMap[$guard['status'] ?? 'created'] ?? '策略创建成功：';
+        $out = "\n" . $this->info($titlePrefix . $plan['alias']) . "\n";
         $out .= "  类文件   {$plan['file_path']}\n";
         $out .= "  完整类名 {$plan['full_class']}\n";
         $out .= "  模板     {$plan['template']}\n";
@@ -839,8 +929,19 @@ PHP;
 
         if ($plan['no_register']) {
             $out .= "  注册     " . $this->warn('跳过（--no-register）') . "\n";
+        } elseif (($guard['status'] ?? '') !== 'created'
+            && $this->aliasExistsInConfig((string) $plan['config_path'], (string) $plan['alias'])
+        ) {
+            $out .= "  注册     已存在，跳过重复写入 {$plan['config_path']}\n";
         } else {
             $out .= "  注册     已写入 {$plan['config_path']}\n";
+        }
+
+        $out .= "  入库     " . $this->formatDbLine($plan, $dbResult) . "\n";
+
+        // 覆盖警告：明确告知备份位置
+        if (($guard['status'] ?? '') === 'overwritten' && !empty($guard['backup'])) {
+            $out .= "  备份     " . $this->warn("原文件已备份：{$guard['backup']}") . "\n";
         }
 
         if (!$lintOk) {
@@ -850,6 +951,27 @@ PHP;
         $out .= "\n使用：\n";
         $out .= "  php bin/sikelan trader:backtest --strategy={$plan['alias']}\n";
         return $out;
+    }
+
+    /**
+     * 渲染入库结果行。
+     *
+     * @param array<string, mixed>    $plan
+     * @param array{0:bool,1:string}|null $dbResult
+     */
+    protected function formatDbLine(array $plan, ?array $dbResult): string
+    {
+        if ($plan['no_register'] || $plan['no_db']) {
+            return $this->warn('跳过');
+        }
+        if ($dbResult === null) {
+            return $this->warn('未执行');
+        }
+        if (!$dbResult[0]) {
+            return $this->warn('未写入：' . $dbResult[1]);
+        }
+        $labels = ['created' => '新增', 'updated' => '更新', 'unchanged' => '无变化'];
+        return '已写入 strategies 表（' . ($labels[$dbResult[1]] ?? $dbResult[1]) . '）';
     }
 
     // ------------------------------------------------------------------------
@@ -896,6 +1018,8 @@ Usage:
   php sikelan trader:make-strategy --name=MyStrat --dir=app/MyStrats
   # 只生成文件，不注册到 config
   php sikelan trader:make-strategy --name=MyStrat --no-register
+  # 只生成文件 + 注册 config，不写 strategies 表
+  php sikelan trader:make-strategy --name=MyStrat --no-db
   # 先看计划不执行
   php sikelan trader:make-strategy --name=MyStrat --dry-run
 
@@ -907,6 +1031,8 @@ Options:
   --template=ema|meanrev|blank  模板（默认 ema）
   --params=v1,v2,...   构造参数值（按模板顺序，逗号分隔；如 20,50,0.003）
   --no-register        只生成类文件，不写入 config/trader.php
+  --no-db              不写入 strategies 表（默认创建后自动入库）
+  --no-backup          配合 --force 使用：覆盖被手工修改的文件前不备份（慎用）
   --config=PATH        指定 config/trader.php 路径（默认项目 config/trader.php）
   -f, --force          已存在时覆盖
   --dry-run            只打印计划，不实际生成

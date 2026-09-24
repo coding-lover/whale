@@ -5,12 +5,13 @@ namespace App\Controllers;
 use Sikelan\Http\Request;
 use Sikelan\Http\Response;
 
-class OrderController
+class Test1Controller
 {
     public function index(Request $request): Response
     {
         unset($request);
 
+        // 统一成功响应：code=0 / data=空列表
         return (new Response())->ret([]);
     }
 

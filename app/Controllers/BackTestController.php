@@ -56,12 +56,11 @@ class BackTestController
         echo '胜率     ' . $perf->get('win_rate_pct') . "%\n";
 
 
-        return (new Response())->withJson([
-            'message' => 'Welcome to QuantTrade',
+        return (new Response())->ret([
             'method' => $request->getMethod(),
-            'uri' => $request->getUri()->getPath(),
-            'keys' => SignalCols::assocKeys(),
-            'matrix' => $matrices
-        ], true);
+            'uri'    => $request->getUri()->getPath(),
+            'keys'   => SignalCols::assocKeys(),
+            'matrix' => $matrices,
+        ]);
     }
 }

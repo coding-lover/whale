@@ -3,9 +3,13 @@
 namespace Sikelan\Tests\trader_test;
 
 use App\Commands\TraderMakeStrategyCommand;
+use App\Models\Strategy;
 use PHPUnit\Framework\TestCase;
 use Sikelan\Command\CommandManager;
 use Sikelan\Command\CommandRunner;
+use Sikelan\Core\Config;
+use Sikelan\Database\EloquentManager;
+use Sikelan\Database\PdoPool;
 
 /**
  * trader:make-strategy 命令测试。
@@ -93,7 +97,7 @@ class TraderMakeStrategyCommandTest extends TestCase
         $this->assertNotEmpty($cmd->desc());
         $help = (string) $cmd->help([]);
         foreach (['--name', '--class', '--dir', '--template', '--params',
-                  '--no-register', '--force', '--dry-run', 'ema', 'meanrev', 'blank'] as $k) {
+                  '--no-register', '--no-db', '--force', '--dry-run', 'ema', 'meanrev', 'blank'] as $k) {
             $this->assertStringContainsString($k, $help);
         }
     }
@@ -236,6 +240,7 @@ class TraderMakeStrategyCommandTest extends TestCase
             '--params=5,10,0.001',
             '--dir=' . $outDir,
             '--config=' . $cfg,
+            '--no-db',
         ]);
 
         $this->assertStringContainsString('创建成功', $out);
@@ -267,6 +272,7 @@ class TraderMakeStrategyCommandTest extends TestCase
             '--template=blank',
             '--dir=' . $outDir,
             '--config=' . $cfg,
+            '--no-db',
         ]);
 
         $cfgContent = file_get_contents($cfg);
@@ -331,6 +337,7 @@ class TraderMakeStrategyCommandTest extends TestCase
             '--dir=' . $outDir,
             '--config=' . $cfg,
             '--force',
+            '--no-db',
         ]);
 
         // 文件被覆盖为新模板内容
@@ -351,6 +358,7 @@ class TraderMakeStrategyCommandTest extends TestCase
             '--template=blank',
             '--dir=' . $outDir,
             '--config=' . $cfg,
+            '--no-db',
         ]);
 
         // 第二次：别名已在 config，但用 --class 换一个类名（类文件不存在）→ 应被 config 级检查拦截
@@ -390,6 +398,86 @@ class TraderMakeStrategyCommandTest extends TestCase
     }
 
     // ====================================================================
+    //  6. 入库 strategies 表行为
+    // ====================================================================
+
+    /** 惰性引导 Eloquent（真实 quant_trade 库） */
+    private function bootEloquent(): void
+    {
+        static $booted = false;
+        if ($booted) {
+            return;
+        }
+        $config = new Config();
+        $config->set('database.mysql', [
+            'host'     => '127.0.0.1',
+            'port'     => 3306,
+            'username' => 'df',
+            'password' => 'aa123456',
+            'database' => 'quant_trade',
+            'charset'  => 'utf8mb4',
+            'timeout'  => 5,
+            'pool_size'=> 10,
+        ]);
+        (new EloquentManager($config, new PdoPool($config)))->boot();
+        $booted = true;
+    }
+
+    public function testDryRunShowsDbPlanLine(): void
+    {
+        $out = $this->exec(['--name=DryDb', '--template=blank', '--dry-run']);
+        $this->assertStringContainsString('写入数据库', $out);
+        $this->assertStringContainsString('strategies 表', $out);
+    }
+
+    public function testNoDbSkipsPersistence(): void
+    {
+        $cfg = $this->copyConfig();
+        $outDir = $this->tmpBase . '/strats';
+
+        $out = $this->exec([
+            '--name=NoDb',
+            '--template=blank',
+            '--dir=' . $outDir,
+            '--config=' . $cfg,
+            '--no-db',
+        ]);
+
+        $this->assertFileExists($outDir . '/NoDbStrategy.php');
+        $this->assertStringContainsString('入库', $out);
+        $this->assertStringContainsString('跳过', $out);
+    }
+
+    public function testMakeStrategyPersistsToStrategiesTableByDefault(): void
+    {
+        $this->bootEloquent();
+        $alias = 'MakeDbE2e';
+        Strategy::query()->where('alias', $alias)->delete();
+
+        $cfg = $this->copyConfig();
+        $outDir = $this->tmpBase . '/strats';
+
+        $out = $this->exec([
+            '--name=' . $alias,
+            '--template=ema',
+            '--params=3,7,0.001',
+            '--dir=' . $outDir,
+            '--config=' . $cfg,
+        ]);
+
+        try {
+            $this->assertStringContainsString('已写入 strategies 表', $out);
+            $row = Strategy::query()->where('alias', $alias)->first();
+            $this->assertNotNull($row, 'strategies 表应存在新策略记录');
+            $this->assertStringContainsString('MakeDbE2eStrategy', $row->class_name);
+            $this->assertSame([3, 7, 0.001], $row->params);
+            $this->assertSame('enabled', $row->status);
+        } finally {
+            Strategy::query()->where('alias', $alias)->delete();
+        }
+    }
+
+    // ====================================================================
     //  helpers
     // ====================================================================
 
@@ -404,6 +492,7 @@ class TraderMakeStrategyCommandTest extends TestCase
             'template'    => 'ema',
             'params'      => '',
             'no_register' => false,
+            'no_db'       => false,
             'force'       => false,
             'dry_run'     => false,
             'config_path' => CONFIG_PATH . '/trader.php',

@@ -3,9 +3,12 @@
 namespace Sikelan\Command\DefaultCommand;
 
 use Sikelan\Command\CommandInterface;
+use Sikelan\Command\FileOverwriteGuard;
 
 class MakeTaskCommand implements CommandInterface
 {
+    use FileOverwriteGuard;
+
     protected string $taskDir;
 
     public function __construct()
@@ -26,6 +29,8 @@ class MakeTaskCommand implements CommandInterface
 
         $taskName = $args[0];
         $force = in_array('--force', $args) || in_array('-f', $args);
+        // --no-backup：配合 -f 使用，覆盖前不生成 .bak 备份
+        $noBackup = in_array('--no-backup', $args);
 
         if (strpos($taskName, 'Task') === false) {
             $taskName .= 'Task';
@@ -35,19 +40,22 @@ class MakeTaskCommand implements CommandInterface
         $className = $taskName;
         $filePath = $this->taskDir . '/' . $taskName . '.php';
 
-        if (file_exists($filePath) && !$force) {
-            return "\033[33mTask '{$taskName}' already exists.\033[0m\nUse --force or -f to overwrite.";
-        }
-
+        // 先渲染模板（纯字符串），门禁需要与磁盘文件逐字节比对
         $template = $this->generateTemplate($namespace, $className);
 
-        if (!is_dir($this->taskDir)) {
-            mkdir($this->taskDir, 0755, true);
+        // 安全写入门禁：检测手工修改，-f 覆盖前自动备份
+        $guard = $this->guardWrite($filePath, $template, $force, !$noBackup);
+        if ($guard['status'] === 'rejected') {
+            return "\033[33mTask '{$taskName}' already exists.\033[0m\n"
+                . "\033[33m{$guard['message']}\033[0m";
         }
 
-        file_put_contents($filePath, $template);
-
-        return "\033[32mTask '{$taskName}' created successfully!\033[0m\nFile: {$filePath}";
+        $verb = $guard['status'] === 'created' ? 'created successfully' : $guard['status'];
+        $out = "\033[32mTask '{$taskName}' {$verb}!\033[0m\nFile: {$filePath}";
+        if ($guard['status'] === 'overwritten' && $guard['backup'] !== null) {
+            $out .= "\n\033[33m⚠ 原文件已被手工修改，覆盖前已备份：{$guard['backup']}\033[0m";
+        }
+        return $out;
     }
 
     public function help(array $args): ?string
@@ -62,7 +70,8 @@ Arguments:
   name            Task name (e.g., SendEmail, ProcessData)
 
 Options:
-  -f, --force     Force overwrite if file exists
+  -f, --force       Force overwrite if file exists（检测到手工修改会先备份为 .bak 文件）
+      --no-backup   配合 -f 使用：覆盖前不备份（慎用）
 
 Examples:
   php sikelan make:task SendEmail

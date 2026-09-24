@@ -59,33 +59,43 @@ class IndexController
 
         $val = 9 * 1_000_000;
 
+        // 统一格式：code=0 / data=业务数据
+        // 此接口含 '<a>...</a>' 演示字符串，故用 withJson(escape=true) 递归 HTML 转义防 XSS
         return (new Response())->withJson([
-            'message' => 'Welcome to QuantTrade',
-            'method' => $request->getMethod(),
-            'uri' => $request->getUri()->getPath(),
-            'ticker' => $ticker,
-            'test' => $realSymbol,
-            'val' => $val,
-            'html' => '<a>' . $realSymbol . '</a>',
+            'code'    => Response::CODE_OK,
+            'message' => '',
+            'data'    => [
+                'message' => 'Welcome to QuantTrade',
+                'method'  => $request->getMethod(),
+                'uri'     => $request->getUri()->getPath(),
+                'ticker'  => $ticker,
+                'test'    => $realSymbol,
+                'val'     => $val,
+                'html'    => '<a>' . $realSymbol . '</a>',
+            ],
         ], true);
     }
 
-    public function hello(Request $request)
+    public function hello(Request $request): Response
     {
         // 安全示范：HTML 转义用户输入防反射型 XSS
         // 原写法 "Hello, {$name}!" 直接拼字符串 → ?name=<script>alert(1)</script> 会注入
         // 改用 e() 转义 → <script> 会被转为 &lt;script&gt;，安全渲染为文本
         $name = e($request->input('name', 'Guest'));
-        return [
+
+        return (new Response())->ret([
             'message' => "Hello, {$name}!",
-            'time' => date('Y-m-d H:i:s'),
-        ];
+            'time'    => date('Y-m-d H:i:s'),
+        ]);
     }
 
-    public function testSendMsg(Request $request)
+    public function testSendMsg(Request $request): Response
     {
+        unset($request);
+
         $Server = Framework::getInstance()->getServer();
         $Server->sendMessage('data_sync', json_encode(['action' => 'sync', 'table' => 'users']));
-        var_dump('send ok!!');
+
+        return (new Response())->ret(['sent' => true]);
     }
 }

@@ -54,9 +54,12 @@ class MakeModelCommandTest extends TestCase
 
     protected function tearDown(): void
     {
-        // 清理临时目录
-        foreach (glob(sys_get_temp_dir() . '/sikelan_make_model_test_*') as $dir) {
-            foreach (glob($dir . '/*.php') as $f) {
+        // 清理临时目录（含 .bak 备份文件）
+        foreach (glob(sys_get_temp_dir() . '/sikelan_make_model_test_*') ?: [] as $dir) {
+            foreach (array_merge(
+                glob($dir . '/*.php') ?: [],
+                glob($dir . '/*.bak.*') ?: []
+            ) as $f) {
                 unlink($f);
             }
             rmdir($dir);
@@ -304,6 +307,7 @@ class MakeModelCommandTest extends TestCase
         ];
 
         $cmd = $this->makeCommand($columns);
+        $modelFile = $this->modelDirOf($cmd) . '/User.php';
 
         // 第一次创建成功
         $first = $cmd->exec(['users']);
@@ -313,9 +317,25 @@ class MakeModelCommandTest extends TestCase
         $second = $cmd->exec(['users']);
         $this->assertStringContainsString('already exists', $second);
 
-        // 带 --force 覆盖成功
+        // 带 --force 但内容与模板一致 → unchanged（幂等，不写盘不备份）
         $third = $cmd->exec(['users', '--force']);
-        $this->assertStringContainsString('created successfully', $third);
+        $this->assertStringContainsString('unchanged', $third);
+        $this->assertSame([], glob($modelFile . '.bak.*'), '内容一致时不应产生备份');
+
+        // 手工修改后 -f 覆盖 → overwritten 且原文件被备份
+        file_put_contents($modelFile, "<?php\n// 手工追加的关联方法\n");
+        $fourth = $cmd->exec(['users', '--force']);
+        $this->assertStringContainsString('overwritten', $fourth);
+        $backups = glob($modelFile . '.bak.*');
+        $this->assertNotEmpty($backups);
+        $this->assertStringContainsString('手工追加的关联方法', file_get_contents($backups[0]));
+
+        // --no-backup：再次手工修改后覆盖，不产生新备份（保留上一份）
+        file_put_contents($modelFile, "<?php\n// 第二次手工修改\n");
+        $backupCountBefore = count(glob($modelFile . '.bak.*'));
+        $fifth = $cmd->exec(['users', '--force', '--no-backup']);
+        $this->assertStringContainsString('overwritten', $fifth);
+        $this->assertCount($backupCountBefore, glob($modelFile . '.bak.*'));
     }
 
     public function testExecWithCustomModelName()

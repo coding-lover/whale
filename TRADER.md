@@ -17,6 +17,9 @@
   - [最简用法](#最简用法-1)
   - [三个模板](#三个模板)
   - [参数速查表](#参数速查表-1)
+- [零·3 策略入库同步（trader:sync-strategies）](#零3-策略入库同步tradersync-strategies)
+  - [同步数据源与增量规则](#同步数据源与增量规则)
+  - [用法与示例](#用法与示例)
 - [一、创建回测](#一创建回测)
   - [1.1 四种创建方式总览](#11-四种创建方式总览)
   - [1.2 方式一：loadDataProvider + newBacktestingByName（推荐）](#12-方式一loaddataprovider--newbacktestingbyname推荐)
@@ -153,8 +156,8 @@ php bin/sikelan trader:backtest --list-strategies
 
 # 零·2 创建策略脚手架（trader:make-strategy）
 
-> 一行创建策略类文件 + 自动注册到 `config/trader.php` 的 `strategies` 注册表，
-> 省去手写类骨架和手动改配置的重复劳动。
+> 一行创建策略类文件 + 自动注册到 `config/trader.php` 的 `strategies` 注册表
+> + 自动写入 `strategies` 表，省去手写类骨架、改配置、录数据库的重复劳动。
 
 ## 最简用法
 
@@ -172,8 +175,10 @@ php bin/sikelan trader:make-strategy --name=MyStrat
        'construct' => [20, 50, 0.003],
    ],
    ```
-3. 自动 `php -l` 语法校验
-4. 提示下一步：`php bin/sikelan trader:backtest --strategy=MyStrat`
+3. 实例化新策略，把别名 / 名称 / 版本 / 构造参数 / 做空能力 / 说明 **upsert 到 `strategies` 表**
+   （已存在则只更新变化字段；DB 不可用时只告警不阻断，可用 `--no-db` 显式关闭）
+4. 自动 `php -l` 语法校验
+5. 提示下一步：`php bin/sikelan trader:backtest --strategy=MyStrat`
 
 ## 三个模板
 
@@ -201,6 +206,9 @@ php bin/sikelan trader:make-strategy --name=MyStrat --dir=app/MyStrats
 # 只生成类文件，不写 config
 php bin/sikelan trader:make-strategy --name=MyStrat --no-register
 
+# 生成文件 + 写 config，但不写 strategies 表
+php bin/sikelan trader:make-strategy --name=MyStrat --no-db
+
 # 先看计划不执行
 php bin/sikelan trader:make-strategy --name=MyStrat --dry-run
 
@@ -218,7 +226,8 @@ php bin/sikelan trader:make-strategy --name=MyStrat --force
 | `--namespace=NS` | 从目录自动推导 | 命名空间（目录在 `app/` 下时自动推为 `App\...`） |
 | `--template=ema\|meanrev\|blank` | `ema` | 模板选择 |
 | `--params=v1,v2,...` | 模板默认值 | 构造参数值，逗号分隔（int/float/带引号字符串） |
-| `--no-register` | 关 | 只生成类文件，不写入 config |
+| `--no-register` | 关 | 只生成类文件，不写入 config（同时也跳过入库） |
+| `--no-db` | 关 | 生成文件 + 写 config，但不写入 `strategies` 表 |
 | `--config=PATH` | 项目 `config/trader.php` | 指定要修改的配置文件路径 |
 | `-f, --force` | 关 | 类文件已存在时覆盖 |
 | `--dry-run` | — | 只打印计划，不生成文件、不改 config |
@@ -230,6 +239,95 @@ php bin/sikelan trader:make-strategy --name=MyStrat --force
 - 别名已存在于 config 时报错（即使类文件不同名），防止重复注册
 - config 注入用 `token_get_all` 精确定位 `strategies` 子数组，不破坏注释 / `env()` / 其他结构
 - 生成后自动 `php -l` 校验，失败给出警告
+- 入库为 best-effort：DB 连不上只在输出中黄色告警，文件 / config 成果不受影响
+
+---
+
+# 零·3 策略入库同步（trader:sync-strategies）
+
+> 把系统现有策略批量写入 `strategies` 表。初始化环境、拉取代码后、策略参数调整后
+> 都可以重复执行——增量同步，不会产生重复数据。
+
+## 同步数据源与增量规则
+
+**数据源**（优先级从高到低）：
+
+1. `config/trader.php` 的 `strategies` 注册表（权威源：别名 + 构造参数）
+2. `app/Services/Trader/Strategies` 目录扫描（补充注册表里遗漏的策略类，
+   别名取类名去掉 `Strategy` 后缀，构造参数为空；同名时 config 注册表优先）
+
+**增量规则**（以 `alias` 唯一键匹配）：
+
+| 表中状态 | 行为 |
+|---|---|
+| 不存在 | 插入，`status=enabled` |
+| 已存在且无变化 | 跳过，不写库 |
+| 已存在但元信息变化 | 只 UPDATE 变化字段（name/class_name/version/params/default_timeframe/trading_mode/can_short/description） |
+| 类无法实例化 | 跳过并打印原因（如构造参数非法） |
+
+> `status` 属于运营字段：手动把某个策略置为 `disabled` 后再执行同步，**不会**被重置回
+> `enabled`；策略类改名 / 参数调整等代码侧变更仍会正常同步。
+
+入库元信息从策略实例反射获得：`getName()` / `getVersion()` / `getDescription()` /
+`canShort()`，`params` 取 config 中的 `construct` 数组，
+`default_timeframe` / `trading_mode` 取 `config/trader.php` 顶层配置。
+
+## 用法与示例
+
+```bash
+# 全量同步（config 注册表 + 策略目录），可重复执行
+php bin/sikelan trader:sync-strategies
+
+# 只同步 config/trader.php 注册表，不扫描目录
+php bin/sikelan trader:sync-strategies --no-scan
+
+# 扫描其他目录
+php bin/sikelan trader:sync-strategies --dir=app/Services/Trader/Strategies
+
+# 只预览变更，不写数据库
+php bin/sikelan trader:sync-strategies --dry-run
+```
+
+输出示例：
+
+```text
+[INFO] 策略同步完成
+------------------------------------------------------------------------
+
+新增（3）
+  • EmaCross20_50
+  • MeanRevStd
+  • WmcStrategy
+------------------------------------------------------------------------
+
+合计 3 个：新增 3 / 更新 0 / 无变化 0 / 跳过 0
+```
+
+再次执行（全部无变化）：
+
+```text
+无变化（3）
+  • EmaCross20_50
+  • MeanRevStd
+  • WmcStrategy
+
+合计 3 个：新增 0 / 更新 0 / 无变化 3 / 跳过 0
+```
+
+服务层可在代码中直接复用（`App\Services\Trader\StrategySyncService`）：
+
+```php
+// 全量同步
+$stats = (new StrategySyncService())->syncAll();
+// $stats = ['created' => [...], 'updated' => [...], 'unchanged' => [...], 'skipped' => [alias => 原因]]
+
+// 只同步给定注册表（测试 / 自定义来源）
+$stats = (new StrategySyncService())->sync($registry, ['no_scan' => true]);
+
+// 同步单个策略（trader:make-strategy 内部即调用此方法）
+$result = (new StrategySyncService())->upsertEntry('MyStrat', MyStratStrategy::class, [20, 50, 0.003]);
+// 返回 created | updated | unchanged | skipped:<原因>
+```
 
 ---
 

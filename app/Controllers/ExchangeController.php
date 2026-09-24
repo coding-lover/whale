@@ -27,25 +27,22 @@ class ExchangeController
         $exchangeName = $request->input('exchange', 'binance');
         $symbol = $request->input('symbol', '');
         if ($symbol === '') {
-            return (new Response(400))->withJson([
-                'status' => 'error',
-                'message' => 'Symbol parameter is required',
-            ]);
+            return (new Response())->err(
+                'Symbol parameter is required',
+                Response::CODE_BAD_REQUEST
+            );
         }
 
         try {
             $exchange = Framework::getInstance()->getExchange();
             $ticker = $exchange->exchange($exchangeName)->getTicker($symbol);
 
-            return (new Response())->withJson([
-                'status' => 'success',
-                'data' => $ticker,
-            ]);
+            return (new Response())->ret($ticker);
         } catch (ExchangeException $e) {
-            return (new Response(500))->withJson([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ]);
+            return (new Response())->err(
+                $e->getMessage(),
+                Response::CODE_SERVER_ERROR
+            );
         }
     }
 
@@ -64,25 +61,22 @@ class ExchangeController
         $limit = (int) ($request->getQueryParams()['limit'] ?? 100);
 
         if ($symbol === '') {
-            return (new Response(400))->withJson([
-                'status' => 'error',
-                'message' => 'Symbol parameter is required',
-            ]);
+            return (new Response())->err(
+                'Symbol parameter is required',
+                Response::CODE_BAD_REQUEST
+            );
         }
 
         try {
             $exchange = Framework::getInstance()->getExchange();
             $book = $exchange->exchange($exchangeName)->getOrderBook($symbol, $limit);
 
-            return (new Response())->withJson([
-                'status' => 'success',
-                'data' => $book,
-            ]);
+            return (new Response())->ret($book);
         } catch (ExchangeException $e) {
-            return (new Response(500))->withJson([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ]);
+            return (new Response())->err(
+                $e->getMessage(),
+                Response::CODE_SERVER_ERROR
+            );
         }
     }
 
@@ -103,25 +97,22 @@ class ExchangeController
         $limit = (int) ($query['limit'] ?? 100);
 
         if ($symbol === '') {
-            return (new Response(400))->withJson([
-                'status' => 'error',
-                'message' => 'Symbol parameter is required',
-            ]);
+            return (new Response())->err(
+                'Symbol parameter is required',
+                Response::CODE_BAD_REQUEST
+            );
         }
 
         try {
             $exchange = Framework::getInstance()->getExchange();
             $klines = $exchange->exchange($exchangeName)->getKlines($symbol, $interval, $limit);
 
-            return (new Response())->withJson([
-                'status' => 'success',
-                'data' => $klines,
-            ]);
+            return (new Response())->ret($klines);
         } catch (ExchangeException $e) {
-            return (new Response(500))->withJson([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ]);
+            return (new Response())->err(
+                $e->getMessage(),
+                Response::CODE_SERVER_ERROR
+            );
         }
     }
 
@@ -140,25 +131,22 @@ class ExchangeController
         $limit = (int) ($request->getQueryParams()['limit'] ?? 100);
 
         if ($symbol === '') {
-            return (new Response(400))->withJson([
-                'status' => 'error',
-                'message' => 'Symbol parameter is required',
-            ]);
+            return (new Response())->err(
+                'Symbol parameter is required',
+                Response::CODE_BAD_REQUEST
+            );
         }
 
         try {
             $exchange = Framework::getInstance()->getExchange();
             $trades = $exchange->exchange($exchangeName)->getTrades($symbol, $limit);
 
-            return (new Response())->withJson([
-                'status' => 'success',
-                'data' => $trades,
-            ]);
+            return (new Response())->ret($trades);
         } catch (ExchangeException $e) {
-            return (new Response(500))->withJson([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ]);
+            return (new Response())->err(
+                $e->getMessage(),
+                Response::CODE_SERVER_ERROR
+            );
         }
     }
 
@@ -178,19 +166,16 @@ class ExchangeController
             $exchange = Framework::getInstance()->getExchange();
             $time = $exchange->exchange($exchangeName)->getServerTime();
 
-            return (new Response())->withJson([
-                'status' => 'success',
-                'data' => [
-                    'exchange' => $exchangeName,
-                    'server_time' => $time,
-                    'local_time' => (int) (microtime(true) * 1000),
-                ],
+            return (new Response())->ret([
+                'exchange'    => $exchangeName,
+                'server_time' => $time,
+                'local_time'  => (int) (microtime(true) * 1000),
             ]);
         } catch (ExchangeException $e) {
-            return (new Response(500))->withJson([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ]);
+            return (new Response())->err(
+                $e->getMessage(),
+                Response::CODE_SERVER_ERROR
+            );
         }
     }
 }

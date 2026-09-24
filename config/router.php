@@ -5,6 +5,56 @@ use Sikelan\Http\Response;
 return [
     [
         'method' => 'GET',
+        'path' => '/api/strategies',
+        'handler' => 'App\Controllers\StrategyController@index',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/strategies/{id}',
+        'handler' => 'App\Controllers\StrategyController@show',
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/api/strategies',
+        'handler' => 'App\Controllers\StrategyController@store',
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/strategies/{id}',
+        'handler' => 'App\Controllers\StrategyController@update',
+    ],
+    [
+        'method' => 'DELETE',
+        'path' => '/api/strategies/{id}',
+        'handler' => 'App\Controllers\StrategyController@destroy',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/test1',
+        'handler' => 'App\Controllers\Test1Controller@index',
+    ],
+    [
+        'method' => 'GET',
+        'path' => '/api/test1/{id}',
+        'handler' => 'App\Controllers\Test1Controller@show',
+    ],
+    [
+        'method' => 'POST',
+        'path' => '/api/test1',
+        'handler' => 'App\Controllers\Test1Controller@store',
+    ],
+    [
+        'method' => 'PUT',
+        'path' => '/api/test1/{id}',
+        'handler' => 'App\Controllers\Test1Controller@update',
+    ],
+    [
+        'method' => 'DELETE',
+        'path' => '/api/test1/{id}',
+        'handler' => 'App\Controllers\Test1Controller@destroy',
+    ],
+    [
+        'method' => 'GET',
         'path' => '/api/orders',
         'handler' => 'App\Controllers\OrderController@index',
     ],
@@ -127,8 +177,7 @@ return [
         'method' => 'GET',
         'path' => '/',
         'handler' => function () {
-            return (new Response())->withJson([
-                'status' => 'success',
+            return (new Response())->ret([
                 'message' => 'Sikelan Framework is running',
                 'version' => '1.0.0',
             ]);
@@ -138,10 +187,10 @@ return [
         'method' => 'GET',
         'path' => '/api/health',
         'handler' => function () {
-            return [
-                'status' => 'healthy',
+            return (new Response())->ret([
+                'status'    => 'healthy',
                 'timestamp' => time(),
-            ];
+            ]);
         },
     ],
     [

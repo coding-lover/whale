@@ -85,6 +85,11 @@
     - [对称加密](#对称加密)
     - [SQL 标识符转义](#sql-标识符转义)
     - [安全配置](#安全配置)
+  - [CRUD 快速开发](#crud-快速开发)
+    - [一键生成 CRUD](#一键生成-crud)
+    - [ResourceController 基类](#resourcecontroller-基类)
+    - [分步生成按需](#分步生成按需)
+    - [最佳实践流程从建表到 CRUD](#最佳实践流程从建表到-crud)
   - [日志系统](#日志系统)
     - [使用日志](#使用日志)
     - [日志配置](#日志配置)
@@ -287,16 +292,17 @@ $app->run('http');
 namespace App\Controllers;
 
 use Sikelan\Http\Request;
+use Sikelan\Http\Response;
 
 class HelloController
 {
-    public function welcome(Request $request, $params)
+    public function welcome(Request $request): Response
     {
-        return [
-            'status' => 'success',
+        // 统一成功响应：HTTP 200 + {"code":0,"message":"","data":{...}}
+        return (new Response())->ret([
             'message' => 'Hello, Sikelan!',
-            'time' => date('Y-m-d H:i:s'),
-        ];
+            'time'    => date('Y-m-d H:i:s'),
+        ]);
     }
 }
 ```
@@ -318,7 +324,7 @@ php bin/start.php http
 
 # 测试接口
 curl http://localhost:9501/hello
-# 输出: {"status":"success","message":"Hello, Sikelan!","time":"..."}
+# 输出: {"code":0,"message":"","data":{"message":"Hello, Sikelan!","time":"..."}}
 ```
 
 ## 生产环境部署
@@ -401,7 +407,10 @@ return [
         'method' => 'GET',
         'path' => '/',
         'handler' => function () {
-            return ['status' => 'success', 'message' => 'Sikelan Framework is running'];
+            // 统一成功响应
+            return (new \Sikelan\Http\Response())->ret([
+                'message' => 'Sikelan Framework is running',
+            ]);
         },
     ],
 
@@ -546,20 +555,57 @@ $router->get('/test', function ($request) {
 
 ### 返回响应
 
-```php
-// 返回 JSON
-return ['status' => 'success', 'data' => $data];
+框架统一 API 响应格式：HTTP 状态码恒为 200，业务结果用 `code` / `message` / `data` 三字段表达：
 
+```php
+use Sikelan\Http\Response;
+
+// ✅ 成功响应：code=0 / message='' / data=业务数据
+return (new Response())->ret($data);
+
+// 成功响应 + 附加字段（如分页信息，与 code/message/data 平级）
+return (new Response())->ret(
+    $items,
+    ['pagination' => ['page' => 1, 'per_page' => 20, 'total' => 100]]
+);
+
+// ✅ 失败响应：code≠0 / message=异常信息 / data=null
+return (new Response())->err('Not Found', Response::CODE_NOT_FOUND);
+
+// 失败响应 + 错误详情（如字段级验证错误）
+return (new Response())->err(
+    'Validation failed',
+    Response::CODE_VALIDATION,
+    ['errors' => $validator->errors()]
+);
+```
+
+**业务状态码常量**（`Sikelan\Http\Response` 内置，调用方可自定义 code）：
+
+| 常量 | 值 | 含义 |
+|------|----|------|
+| `CODE_OK` | 0 | 成功 |
+| `CODE_ERROR` | 1 | 通用失败（默认） |
+| `CODE_BAD_REQUEST` | 1400 | 参数错误 |
+| `CODE_UNAUTHORIZED` | 1401 | 未认证 |
+| `CODE_FORBIDDEN` | 1403 | 禁止访问 |
+| `CODE_NOT_FOUND` | 1404 | 资源不存在 |
+| `CODE_VALIDATION` | 1422 | 验证失败 |
+| `CODE_SERVER_ERROR` | 1500 | 服务器内部错误 |
+
+> 🔴 **铁律**：HTTP 状态码恒为 200；客户端按 `body.code` 判断成功/失败，**禁止再用** HTTP 4xx/5xx 表达业务错误。框架内部的 `RequestHandler` 在 404/500 兜底时也走统一格式（`CODE_NOT_FOUND` / `CODE_SERVER_ERROR`）。
+
+**其他类型响应**（保留 PSR-7 标准方法，按需使用）：
+
+```php
 // 返回 HTML
-return '<html><body><h1>Hello</h1></body></html>';
+return (new Response())->withHtml('<html><body><h1>Hello</h1></body></html>');
 
 // 重定向
-// 注意：需使用 Response 对象
-// return (new Response())->withRedirect('/new-url');
+return (new Response())->withRedirect('/new-url');
 
-// 错误状态码
-http_response_code(404);
-return ['error' => 'Not Found'];
+// 自定义 JSON（仍走 DEFAULT_JSON_FLAGS 防 XSS）
+return (new Response())->withJson(['custom' => 'payload']);
 ```
 
 ### 使用控制器
@@ -569,30 +615,34 @@ return ['error' => 'Not Found'];
 namespace App\Controllers;
 
 use Sikelan\Http\Request;
+use Sikelan\Http\Response;
 
 class UserController
 {
-    public function index(Request $request, $params)
+    public function index(Request $request): Response
     {
-        $page = $request->getParam('page', 1);
-        $limit = $request->getParam('limit', 10);
-        
-        return [
-            'users' => [],
-            'pagination' => ['page' => $page, 'limit' => $limit]
-        ];
+        $page  = $request->getInt('page', 1);
+        $limit = $request->getInt('limit', 10);
+
+        // 统一成功响应：data 放业务数据，pagination 放 extra
+        return (new Response())->ret(
+            ['users' => []],
+            ['pagination' => ['page' => $page, 'limit' => $limit]]
+        );
     }
-    
-    public function show(Request $request, $params)
+
+    public function show(Request $request): Response
     {
-        $userId = $params['id'];
-        return ['user' => ['id' => $userId, 'name' => 'John Doe']];
+        $userId = $request->getInt('id');
+
+        return (new Response())->ret(['user' => ['id' => $userId, 'name' => 'John Doe']]);
     }
-    
-    public function store(Request $request, $params)
+
+    public function store(Request $request): Response
     {
         $data = $request->getPostParams();
-        return ['message' => '用户创建成功', 'data' => $data];
+
+        return (new Response())->ret($data);
     }
 }
 ```
@@ -1838,12 +1888,15 @@ $name = e($request->input('name', 'Guest'));
 $safeData = \Sikelan\Security\HtmlEncoder::encodeJsonStrings($data);
 ```
 
-**JSON 响应**——`withJson()` 默认带 `JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP` 安全标志，防止 JSON 内容被浏览器误解析为标签：
+**JSON 响应**——`withJson()`（包括 `ret()` / `err()`）默认带 `JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP` 安全标志，防止 JSON 内容被浏览器误解析为标签：
 
 ```php
 use Sikelan\Http\Response;
 
-// 常规 JSON（默认安全 flag）
+// 统一成功响应（推荐）：code=0/message=''/data=...
+return (new Response())->ret(['rows' => $rows]);
+
+// 自定义 JSON（特殊场景，不走统一格式）
 return (new Response())->withJson(['data' => $rows]);
 
 // 额外把所有字符串值做 HTML 转义（数据要嵌入 HTML 页面时）
@@ -1854,7 +1907,7 @@ return (new Response())->withJson(['html' => $userInput], true);
 
 ```php
 return (new Response())
-    ->withJson(['ok' => true])
+    ->ret(['ok' => true])
     ->withSecurityHeaders();  // 手动调用时重复注入也无害
 ```
 
@@ -1882,7 +1935,12 @@ $validator = validator($request->getPostParams(), [
 ]);
 
 if ($validator->fails()) {
-    return ['errors' => $validator->errors()];  // ['字段名' => ['错误消息1', ...]]
+    // 统一失败响应：code=CODE_VALIDATION（1422）/ message='Validation failed' / errors 详情放 extra
+    return (new Response())->err(
+        'Validation failed',
+        Response::CODE_VALIDATION,
+        ['errors' => $validator->errors()]  // ['字段名' => ['错误消息1', ...]]
+    );
 }
 
 $data = $validator->validated();  // 只返回规则中声明的字段
@@ -1993,6 +2051,228 @@ return [
     // 对称加密算法（当前固定 aes-256-gcm）
     'cipher'           => 'aes-256-gcm',
 ];
+```
+
+## CRUD 快速开发
+
+框架已集成 Eloquent ORM（`illuminate/database`）并提供协程安全的连接池，在此基础上封装了 `ResourceController` 基类和 `make:crud` 一键生成命令，让 RESTful CRUD 开发只需几行代码。
+
+### 一键生成 CRUD
+
+```bash
+# 根据数据库表生成 Model + Controller + 路由（推荐）
+php bin/sikelan make:crud users
+
+# 指定 Model 类名
+php bin/sikelan make:crud t_user --model=Member
+
+# 强制覆盖已存在的文件
+php bin/sikelan make:crud users -f
+```
+
+生成产物：
+| 文件 | 说明 |
+|------|------|
+| `app/Models/User.php` | Eloquent Model（自动推导 `$fillable` / `$casts` / `$timestamps`） |
+| `app/Controllers/UserController.php` | 继承 `ResourceController`，绑定 User 模型 |
+| `config/router.php` | 自动追加 5 条 RESTful 路由 |
+
+### ResourceController 基类
+
+继承 `Sikelan\Http\ResourceController` 即自动获得 5 个 RESTful 动作：
+
+| 方法 | HTTP | 路由 | 说明 |
+|------|------|------|------|
+| `index()` | GET | `/api/users` | 分页列表（支持 `?page=&per_page=&过滤字段=&sort=&order=`） |
+| `show()` | GET | `/api/users/{id}` | 单条详情（找不到 code=CODE_NOT_FOUND） |
+| `store()` | POST | `/api/users` | 创建（成功 code=0） |
+| `update()` | PUT | `/api/users/{id}` | 部分更新（找不到 code=CODE_NOT_FOUND） |
+| `destroy()` | DELETE | `/api/users/{id}` | 删除（成功 code=0，data 为空数组） |
+
+子类只需声明 `$modelClass` 和可选配置：
+
+```php
+namespace App\Controllers;
+
+use App\Models\User;
+use Sikelan\Http\ResourceController;
+
+class UserController extends ResourceController
+{
+    protected string $modelClass = User::class;
+
+    // 验证规则（为空则用 Model 的 $fillable 作为白名单）
+    protected array $rules = [
+        'name'  => 'required|string|min:2|max:50',
+        'email' => 'required|email',
+    ];
+
+    // 自定义验证错误消息
+    protected array $messages = [
+        'name.required' => '名称不能为空',
+    ];
+
+    // 默认每页条数
+    protected int $perPage = 15;
+
+    // 允许通过 query 过滤的字段白名单
+    protected array $filterable = ['status'];
+
+    // 允许排序的字段白名单
+    protected array $sortable = ['created_at', 'id'];
+}
+```
+
+**安全特性：**
+- 输入自动净化（Request 内置 `InputSanitizer`）
+- 仅 `$rules` 声明的字段可写入（防 mass assignment）；无 `$rules` 时用 Model 的 `$fillable`
+- 验证失败返回 `CODE_VALIDATION`（业务码 1422） + 错误详情
+- JSON 输出走 `withJson()`（XSS 安全 flag + 安全响应头）
+
+### 分步生成（按需）
+
+```bash
+# 1. 只生成 Model（从表结构推导 fillable/casts）
+php bin/sikelan make:model users
+
+# 2. 生成绑定 Model 的 CRUD 控制器
+php bin/sikelan make:controller User --model=User
+
+# 3. 生成空壳控制器（手动实现业务）
+php bin/sikelan make:controller Custom
+```
+
+### 最佳实践流程：从建表到 CRUD
+
+完整四步走，以 `users` 表为例：
+
+#### 第 1 步：创建迁移文件
+
+在 `database/migrations/` 下新建 SQL 文件，命名 `YYYY_MM_DD_NNNNNN_<描述>.sql`：
+
+```sql
+-- database/migrations/2026_09_15_000001_create_users_table.sql
+CREATE TABLE IF NOT EXISTS `users` (
+    `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `username`   VARCHAR(64)     NOT NULL DEFAULT '' COMMENT '登录用户名',
+    `email`      VARCHAR(128)    NOT NULL DEFAULT '' COMMENT '邮箱',
+    `password`   VARCHAR(255)    NOT NULL DEFAULT '' COMMENT 'bcrypt 哈希密码',
+    `role`       VARCHAR(20)     NOT NULL DEFAULT 'trader' COMMENT '角色',
+    `status`     VARCHAR(16)     NOT NULL DEFAULT 'active' COMMENT '状态',
+    `created_at` DATETIME(3)     NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3)     NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `deleted_at` DATETIME(3)     NULL COMMENT '软删除',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_users_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+```
+
+**表设计铁律：**
+1. 🔴 所有 `NOT NULL` 字段必须有 `DEFAULT`（严格模式下 INSERT 不报错）
+2. 🔴 密码用 bcrypt 哈希，绝不存明文
+3. 🔴 不存 API Key/Secret 明文（走 `.env` + `credential_ref`）
+4. 金额用 `DECIMAL`，业务时间戳用 `BIGINT` 毫秒，审计时间用 `DATETIME(3)`
+5. 用 `CREATE TABLE IF NOT EXISTS`，迁移可重复执行
+
+#### 第 2 步：执行建表
+
+```bash
+mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASS $DB_NAME \
+  < database/migrations/2026_09_15_000001_create_users_table.sql
+```
+
+#### 第 3 步：生成 Model
+
+```bash
+php bin/sikelan make:model users
+```
+
+自动从表结构推导 `$fillable` / `$casts`。生成后按需调整：
+
+```php
+// app/Models/User.php — 生成后手动调整的要点
+class User extends Model
+{
+    use SoftDeletes;                              // 有 deleted_at 就加软删除
+
+    protected $fillable = [
+        // 去掉 created_at / updated_at / deleted_at（Eloquent 自动管理）
+        'username', 'email', 'password', 'role', 'status',
+    ];
+
+    protected $hidden = ['password', 'remember_token'];  // 敏感字段不序列化
+
+    protected $casts = [...];
+
+    // 密码自动哈希赋值器
+    public function setPasswordAttribute(string $value): void
+    {
+        $this->attributes['password'] = bcrypt($value);
+    }
+}
+```
+
+#### 第 4 步：生成 CRUD 控制器 + 路由
+
+```bash
+php bin/sikelan make:controller User --model=User
+```
+
+自动生成继承 `ResourceController` 的控制器并追加 5 条 RESTful 路由。生成后配置验证规则：
+
+```php
+// app/Controllers/UserController.php
+class UserController extends ResourceController
+{
+    protected string $modelClass = User::class;
+
+    protected array $rules = [
+        'username' => 'required|string|min:3|max:64',
+        'email'    => 'required|email',
+        'password' => 'required|string|min:6',
+        'role'     => 'in:admin,trader,viewer',
+        'status'   => 'in:active,disabled',
+    ];
+
+    protected array $filterable = ['status', 'role'];
+    protected array $sortable   = ['id', 'created_at'];
+}
+```
+
+#### 流程总结
+
+```
+创建迁移 SQL ──→ 执行建表 ──→ make:model ──→ make:controller --model
+   (第1步)         (第2步)       (第3步)          (第4步)
+```
+
+> 💡 也可用 `php bin/sikelan make:crud users` 一键完成第 3、4 步（Model + Controller + 路由），
+> 适合表结构已确定的场景。
+
+#### 覆盖保护（防止 -f 冲掉手写代码）
+
+所有 make 命令（`make:controller` / `make:model` / `make:task` / `make:crud` /
+`trader:make-strategy`）的文件写入都经过统一的安全门禁：
+
+| 目标文件状态 | 命令行为 |
+|--------------|----------|
+| 不存在 | 直接创建（`created`） |
+| 存在但内容与模板一致 | `unchanged`，不写盘（保持 mtime），重复执行幂等 |
+| 存在且被手工修改、无 `-f` | 拒绝覆盖（`rejected`），提示约 `+X/-Y` 行差异 |
+| 存在且被手工修改、带 `-f` | **先自动备份再覆盖**（`overwritten`） |
+
+- 备份文件：`<原文件>.bak.YmdHis_序号`（同目录，可直接 `diff` 找回手写代码）
+- 每个文件只保留最近 **3 份**备份，更旧的自动清理
+- 确认无需备份时可加 `--no-backup`（慎用，手工修改将无法找回）
+
+```bash
+# 手工改过 UserController 后重新生成 → 默认拒绝
+php bin/sikelan make:controller User --model=User
+# → 目标文件已被手工修改（约 +12/-2 行差异）... 请加 -f/--force
+
+# 确认覆盖：原文件自动备份后再生成
+php bin/sikelan make:controller User --model=User -f
+# → ⚠ 原文件已被手工修改，覆盖前已备份：app/Controllers/UserController.php.bak.20260921143000_0000
 ```
 
 ## 日志系统
@@ -2313,11 +2593,14 @@ php bin/sikelan server status
 #### 生成控制器
 
 ```bash
-# 创建控制器（会自动添加 RESTful 路由）
+# 创建控制器（会自动同步 RESTful 路由到 config/router.php）
 php bin/sikelan make:controller User
 
 # 强制覆盖已存在的文件
 php bin/sikelan make:controller Product -f
+
+# 路由冲突覆盖时跳过交互确认（管道/脚本等非交互环境必加）
+php bin/sikelan make:controller Product -y
 ```
 
 **生成的控制器：**
@@ -2330,13 +2613,28 @@ use Sikelan\Http\Request;
 
 class UserController
 {
-    public function index(Request $request, $params) { }
-    public function show(Request $request, $params) { }
-    public function store(Request $request, $params) { }
-    public function update(Request $request, $params) { }
-    public function destroy(Request $request, $params) { }
+    public function index(Request $request) { }
+    public function show(Request $request) { }
+    public function store(Request $request) { }
+    public function update(Request $request) { }
+    public function destroy(Request $request) { }
 }
 ```
+
+**路由同步与去重（method + path 为 key）：**
+
+`make:controller` / `make:crud` / `route` 命令写路由都采用**替换语义**：
+先把 `config/router.php` 中的路由读取为数组，以 `METHOD + path` 组成 key 检测重复，
+再移除该控制器的全部旧路由后写入新路由。
+
+- **控制器删除重建**：旧路由会被整体刷新，不再出现"新旧并存导致重复注册"的问题
+  （历史路由中类名大小写不同的变体，如 `test1Controller`，也会被识别并清理——PHP 类名大小写不敏感）
+- **资源名规则**：以数字结尾的控制器（如 `Test1`）不加复数 `s`（路由为 `/api/test1`）
+- **冲突确认**：若新的 `method + path` 已被**其他 handler** 占用（会造成启动时
+  `Cannot register two routes matching` 异常），会列出冲突明细并提示是否覆盖；
+  交互终端输入 `y` 确认，非交互环境自动取消（加 `-y/--yes` 跳过确认直接覆盖）
+- **route 命令**：`php bin/sikelan route <控制器>` 预览模式（不带 `-f`）会显示
+  "将移除的旧路由 / 将生成的新路由 / 路径冲突" 三段信息，`-f` 确认执行
 
 #### 生成模型
 
@@ -2497,8 +2795,10 @@ php bin/sikelan hello Sikelan  # 输出: Hello, Sikelan!
 | `server stop` | 停止服务器 | `php sikelan server stop` |
 | `server restart` | 重启服务器 | `php sikelan server restart` |
 | `server status` | 查看服务器状态 | `php sikelan server status` |
-| `make:controller` | 生成控制器 | `php sikelan make:controller User` |
+| `make:controller` | 生成控制器（支持 `--model` 绑定 Eloquent 模型） | `php sikelan make:controller User --model=User` |
+| `route` | 按控制器反射结果刷新 RESTful 路由（预览 + `-f` 执行） | `php sikelan route User -f` |
 | `make:model` | 根据数据库表自动生成 Eloquent 模型 | `php sikelan make:model users` |
+| `make:crud` | 一键生成 Model + CRUD 控制器 + 路由 | `php sikelan make:crud users` |
 | `make:task` | 生成任务类 | `php sikelan make:task SendEmail` |
 | `config show` | 显示配置 | `php sikelan config show app` |
 | `config get` | 获取配置值 | `php sikelan config get app.env` |

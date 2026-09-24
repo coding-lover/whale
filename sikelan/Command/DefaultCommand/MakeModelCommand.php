@@ -3,6 +3,7 @@
 namespace Sikelan\Command\DefaultCommand;
 
 use Sikelan\Command\CommandInterface;
+use Sikelan\Command\FileOverwriteGuard;
 use Sikelan\Framework;
 
 /**
@@ -23,6 +24,8 @@ use Sikelan\Framework;
  */
 class MakeModelCommand implements CommandInterface
 {
+    use FileOverwriteGuard;
+
     /** @var string Model 文件输出目录 */
     protected string $modelDir;
 
@@ -54,7 +57,8 @@ Arguments:
 
 Options:
   --model=ClassName   指定 Model 类名（默认由表名自动推导，如 users → User）
-  -f, --force         文件已存在时强制覆盖
+  -f, --force         文件已存在时强制覆盖（检测到手工修改会先备份为 .bak 文件）
+      --no-backup     配合 -f 使用：覆盖前不备份（慎用）
 
 Examples:
   php bin/sikelan make:model users
@@ -91,23 +95,23 @@ HELP;
         $className = $parsed['model'] !== '' ? $parsed['model'] : $this->tableToClassName($table);
         $filePath = $this->modelDir . '/' . $className . '.php';
 
+        // 快速路径：文件存在且未授权覆盖，直接拒绝（模板依赖表结构，先不查库渲染）
+        // 注意：-f 时仍会经 guardWrite 逐字节比对，内容一致则 unchanged，不一致才备份覆盖
         if (file_exists($filePath) && !$parsed['force']) {
             return "\033[33mModel '{$className}' already exists ({$filePath}).\033[0m\n"
-                . "Use -f or --force to overwrite.";
+                . "Use -f or --force to overwrite（-f 检测到手工修改时会先备份为 .bak 文件）。";
         }
 
         $meta = $this->buildModelMeta($table, $columns);
         $template = $this->generateTemplate($className, $meta);
 
-        if (!is_dir($this->modelDir)) {
-            mkdir($this->modelDir, 0755, true);
-        }
-
-        file_put_contents($filePath, $template);
+        // 安全写入门禁（走到这里一定带 -f 或文件不存在）
+        $guard = $this->guardWrite($filePath, $template, $parsed['force'], !$parsed['no_backup']);
 
         // ---- 4. 输出结果摘要 ----
+        $verb = $guard['status'] === 'created' ? 'created successfully' : $guard['status'];
         $lines = [];
-        $lines[] = "\033[32mModel '{$className}' created successfully!\033[0m";
+        $lines[] = "\033[32mModel '{$className}' {$verb}!\033[0m";
         $lines[] = "File:   {$filePath}";
         $lines[] = "Table:  {$table} (" . count($columns) . " columns)";
         $lines[] = "Fillable: " . implode(', ', $meta['fillable']);
@@ -118,6 +122,9 @@ HELP;
                 $meta['casts']
             ));
         }
+        if ($guard['status'] === 'overwritten' && $guard['backup'] !== null) {
+            $lines[] = "\033[33m⚠ 原文件已被手工修改，覆盖前已备份：{$guard['backup']}\033[0m";
+        }
 
         return implode("\n", $lines);
     }
@@ -126,17 +133,20 @@ HELP;
      * 解析命令行参数
      *
      * @param array $args 原始参数数组
-     * @return array{table:string, model:string, force:bool}
+     * @return array{table:string, model:string, force:bool, no_backup:bool}
      */
     protected function parseArgs(array $args): array
     {
         $table = '';
         $model = '';
         $force = false;
+        $noBackup = false;
 
         foreach ($args as $arg) {
             if ($arg === '-f' || $arg === '--force') {
                 $force = true;
+            } elseif ($arg === '--no-backup') {
+                $noBackup = true;
             } elseif (strpos($arg, '--model=') === 0) {
                 $model = substr($arg, 8);
             } elseif ($arg === '--model') {
@@ -147,7 +157,12 @@ HELP;
             }
         }
 
-        return ['table' => $table, 'model' => $model, 'force' => $force];
+        return [
+            'table' => $table,
+            'model' => $model,
+            'force' => $force,
+            'no_backup' => $noBackup,
+        ];
     }
 
     /**

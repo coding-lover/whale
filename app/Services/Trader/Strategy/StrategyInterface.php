@@ -21,6 +21,16 @@ interface StrategyInterface
     public function getName(): string;
 
     /**
+     * 返回策略版本号（用于报表 / strategies 表镜像）
+     */
+    public function getVersion(): string;
+
+    /**
+     * 返回策略说明文字（可为空字符串）
+     */
+    public function getDescription(): string;
+
+    /**
      * 第二步：计算指标
      *
      * 传入 OHLCV 矩阵（SignalCols::candlesToMatrix 生成的 12 列标准矩阵 + 自定义列），

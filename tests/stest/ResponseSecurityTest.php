@@ -181,4 +181,146 @@ class ResponseSecurityTest extends TestCase
         $this->assertTrue($resp->hasHeader('X-Content-Type-Options'));
         $this->assertStringContainsString('required', $resp->getBody());
     }
+
+    // ========== ret() / err() 统一响应格式 ==========
+
+    /**
+     * 成功响应：code=0 / message='' / data=data / HTTP 状态码恒为 200
+     */
+    public function testRet_ReturnsUnifiedSuccessPayload()
+    {
+        $resp = (new Response())->ret(['id' => 1, 'name' => 'foo']);
+        $body = json_decode($resp->getBody(), true);
+
+        $this->assertSame(200, $resp->getStatusCode());
+        $this->assertSame(0, $body['code']);
+        $this->assertSame('', $body['message']);
+        $this->assertSame(['id' => 1, 'name' => 'foo'], $body['data']);
+    }
+
+    /**
+     * ret() 的 extra 字段（如 pagination）与三基础字段平级共存
+     */
+    public function testRet_MergesExtraIntoPayload()
+    {
+        $resp = (new Response())->ret(
+            [['id' => 1], ['id' => 2]],
+            ['pagination' => ['page' => 1, 'total' => 2]]
+        );
+        $body = json_decode($resp->getBody(), true);
+
+        $this->assertSame(0, $body['code']);
+        $this->assertSame([['id' => 1], ['id' => 2]], $body['data']);
+        $this->assertSame(['page' => 1, 'total' => 2], $body['pagination']);
+    }
+
+    /**
+     * ret() 的 extra 中含保留键 code/message/data 时，基础三字段不被覆盖（用 + 合并）
+     */
+    public function testRet_ExtraCannotOverrideReservedKeys()
+    {
+        $resp = (new Response())->ret(['a' => 1], ['code' => 999, 'message' => 'hack', 'data' => 'leak']);
+        $body = json_decode($resp->getBody(), true);
+
+        // 基础三字段保持不变
+        $this->assertSame(0, $body['code']);
+        $this->assertSame('', $body['message']);
+        $this->assertSame(['a' => 1], $body['data']);
+    }
+
+    /**
+     * ret() 默认空 data 时输出 data 为空数组
+     */
+    public function testRet_DefaultEmptyData()
+    {
+        $resp = (new Response())->ret();
+        $body = json_decode($resp->getBody(), true);
+
+        $this->assertSame(0, $body['code']);
+        $this->assertSame([], $body['data']);
+        $this->assertSame('', $body['message']);
+    }
+
+    /**
+     * 失败响应：code≠0 / message=异常信息 / data=null / HTTP 状态码恒为 200
+     */
+    public function testErr_ReturnsUnifiedErrorPayload()
+    {
+        $resp = (new Response())->err('Not Found', Response::CODE_NOT_FOUND);
+        $body = json_decode($resp->getBody(), true);
+
+        $this->assertSame(200, $resp->getStatusCode());
+        $this->assertSame(Response::CODE_NOT_FOUND, $body['code']);
+        $this->assertSame('Not Found', $body['message']);
+        $this->assertNull($body['data']);
+    }
+
+    /**
+     * err() 默认 code=CODE_ERROR（1）
+     */
+    public function testErr_DefaultCodeIsError()
+    {
+        $resp = (new Response())->err('Something went wrong');
+        $body = json_decode($resp->getBody(), true);
+
+        $this->assertSame(200, $resp->getStatusCode());
+        $this->assertSame(Response::CODE_ERROR, $body['code']);
+        $this->assertSame('Something went wrong', $body['message']);
+    }
+
+    /**
+     * err() 的 extra（如 errors 详情）与三基础字段平级共存
+     */
+    public function testErr_MergesExtraIntoPayload()
+    {
+        $resp = (new Response())->err(
+            'Validation failed',
+            Response::CODE_VALIDATION,
+            ['errors' => ['name' => ['required']]]
+        );
+        $body = json_decode($resp->getBody(), true);
+
+        $this->assertSame(Response::CODE_VALIDATION, $body['code']);
+        $this->assertSame('Validation failed', $body['message']);
+        $this->assertNull($body['data']);
+        $this->assertSame(['name' => ['required']], $body['errors']);
+    }
+
+    /**
+     * 业务状态码常量：CODE_OK=0、CODE_NOT_FOUND/CODE_VALIDATION 等非 0
+     */
+    public function testCodeConstants_AreSemanticallyCorrect()
+    {
+        $this->assertSame(0, Response::CODE_OK);
+        $this->assertNotEquals(0, Response::CODE_ERROR);
+        $this->assertNotEquals(0, Response::CODE_BAD_REQUEST);
+        $this->assertNotEquals(0, Response::CODE_UNAUTHORIZED);
+        $this->assertNotEquals(0, Response::CODE_FORBIDDEN);
+        $this->assertNotEquals(0, Response::CODE_NOT_FOUND);
+        $this->assertNotEquals(0, Response::CODE_VALIDATION);
+        $this->assertNotEquals(0, Response::CODE_SERVER_ERROR);
+    }
+
+    /**
+     * ret()/err() 也走 DEFAULT_JSON_FLAGS：JSON 字符串中的 <script> 被转义防 XSS
+     */
+    public function testRet_EscapesAngleBracketsInJson()
+    {
+        $resp = (new Response())->ret(['msg' => '<script>alert(1)</script>']);
+        $body = $resp->getBody();
+
+        $this->assertStringContainsString('\u003Cscript\u003E', $body);
+        $this->assertStringNotContainsString('<script>', $body);
+    }
+
+    /**
+     * err() 设置 Content-Type: application/json
+     */
+    public function testRetAndErr_SetJsonContentType()
+    {
+        $ok = (new Response())->ret([]);
+        $err = (new Response())->err('oops');
+        $this->assertStringContainsString('application/json', $ok->getHeaderLine('Content-Type'));
+        $this->assertStringContainsString('application/json', $err->getHeaderLine('Content-Type'));
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\User;
+use App\Models\Strategy;
 use Sikelan\Http\Request;
 use Sikelan\Http\ResourceController;
 
@@ -23,9 +23,9 @@ use Sikelan\Http\ResourceController;
  *   $filterable  允许通过 query 过滤的字段白名单
  *   $sortable    允许排序的字段白名单
  */
-class UserController extends ResourceController
+class StrategyController extends ResourceController
 {
-    protected string $modelClass = User::class;
+    protected string $modelClass = Strategy::class;
 
     /**
      * 验证规则（参考 Sikelan\Security\Validator 支持的规则）
@@ -59,8 +59,7 @@ class UserController extends ResourceController
      * @var array<int, string>
      */
     protected array $filterable = [
-        'status',
-        'role',
+        // 'status',
     ];
 
     /**
@@ -69,7 +68,7 @@ class UserController extends ResourceController
      * @var array<int, string>
      */
     protected array $sortable = [
-        'id',
-        'created_at',
+        // 'created_at',
+        // 'id',
     ];
 }

@@ -30,6 +30,7 @@ class CommandRunner
             new DefaultCommand\HelpCommand(),
             new DefaultCommand\MakeControllerCommand(),
             new DefaultCommand\MakeModelCommand(),
+            new DefaultCommand\MakeCrudCommand(),
             new DefaultCommand\MakeTaskCommand(),
             new DefaultCommand\ConfigCommand(),
             new DefaultCommand\RouteCommand(),
